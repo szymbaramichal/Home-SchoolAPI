@@ -34,8 +34,8 @@ namespace HomeSchoolAPI.Controllers
 
 
 
-        [HttpPost]
-        public async Task<IActionResult> AddFriend(UserToAddDTO userToAddID)
+        [HttpPut]
+        public async Task<IActionResult> AddFriend([FromBody]UserToAddDTO userToAddID)
         {
             try
             {
@@ -60,6 +60,7 @@ namespace HomeSchoolAPI.Controllers
                 //pobieram usera do którego dodaje znajomych
                 var user = await _userHelper.ReturnUserByID(id);
                 var isValidInput = _users.Find<User>(user => user.Id == userToAddID.UserToAddID).Any();
+                
                 try
                 {
                     if(!isValidInput)
@@ -76,13 +77,13 @@ namespace HomeSchoolAPI.Controllers
                     return StatusCode(405, error);
                 }
 
-                var addingFriend = await _userHelper.AddFriend(userToAddID.UserToAddID, user);
+                var isNotAlreadyFriend = await _userHelper.AddFriend(userToAddID.UserToAddID, user);
 
-                if(addingFriend == null)
+                if(isNotAlreadyFriend == null)
                 {
-                        error.Err = "Już jesteście znajomymi";
-                        error.Desc = "Już jesteście znajomymi, nie musisz zapraszać tego użytkownika";
-                        return StatusCode(405, error);
+                    error.Err = "Już jesteście znajomymi";
+                    error.Desc = "Już jesteście znajomymi, nie musisz zapraszać tego użytkownika";
+                    return StatusCode(409, error);
                 }
                 
                 return Ok(_userHelper.ReturnUserToReturn(user));

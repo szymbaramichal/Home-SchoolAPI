@@ -24,7 +24,6 @@ namespace HomeSchoolAPI.Helpers
             userToReturn.surrname = userFromRepo.surrname;
             userToReturn.userRole = userFromRepo.userRole;
             userToReturn.friends = userFromRepo.friends;
-            userToReturn.username = userFromRepo.username;
             userToReturn.userCode = userFromRepo.userCode;
 
             return userToReturn;
@@ -32,15 +31,16 @@ namespace HomeSchoolAPI.Helpers
 
         public async Task<User> AddFriend(string userToAddID, User user)
         {
-            // int size = friendsOfUser.Count;
 
-            // for (int i = 0; i < size; i++)
-            // {
-            //     if(friendsOfUser[i].Contains(userToAddID))
-            //     {
-            //         return null;
-            //     }    
-            //}
+            int size = user.friends.Count;
+
+            for (int i = 0; i < user.friends.Count; i++)
+            {
+                if(user.friends[i].Contains(userToAddID))
+                {
+                    return null;
+                }    
+            }
 
             user.friends.Add(userToAddID);
 

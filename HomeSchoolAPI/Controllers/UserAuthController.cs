@@ -98,6 +98,8 @@ namespace HomeSchoolAPI.Controllers
             }
             catch
             {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
             }
 

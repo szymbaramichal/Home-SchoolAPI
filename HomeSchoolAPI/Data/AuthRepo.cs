@@ -47,6 +47,7 @@ namespace HomeSchoolAPI.Data
             List<string> list = new List<string>();
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            //add pendingInvitations and checking if user is student than userCode is required
             user.friends = list;
 
             await _users.InsertOneAsync(user);
