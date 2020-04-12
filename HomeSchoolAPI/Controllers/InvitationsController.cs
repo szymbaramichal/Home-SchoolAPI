@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
+using HomeSchoolAPI.DTOs;
 using HomeSchoolAPI.Helpers;
 using HomeSchoolAPI.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,6 @@ using MongoDB.Driver;
 
 namespace HomeSchoolAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class InvitationsController : ControllerBase
@@ -32,42 +32,60 @@ namespace HomeSchoolAPI.Controllers
             _users = database.GetCollection<User>("Users");
         }
 
-        [HttpPut]
-        public async Task<IActionResult> AddFriend(string[] userIDs)
-        {
 
+
+        [HttpPost]
+        public async Task<IActionResult> AddFriend(UserToAddDTO userToAddID)
+        {
             try
             {
                 token = HttpContext.Request.Headers["Authorization"];
                 token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
+                {
+                    error.Err = "Token wygasł";
+                    error.Desc = "Zaloguj się od nowa";
+                    return StatusCode(405, error);
+                }
             }
             catch
             {
                 error.Err = "Nieprawidlowy token";
                 error.Desc = "Wprowadz token jeszcze raz";
+                return StatusCode(405, error);
             }
-                //validating token
-                if(!_tokenHelper.IsValidateToken(token)) return Unauthorized("Token expired");
 
                 var id = _tokenHelper.GetIdByToken(token);
 
                 //pobieram usera do którego dodaje znajomych
-                var user = _userHelper.ReturnUserByIDSync(id);
-
-                List<string> friendsOfUser = new List<string>();
-                friendsOfUser = user.friends;
-
-                for (int i = 0; i < userIDs.Length; i++)
+                var user = await _userHelper.ReturnUserByID(id);
+                var isValidInput = _users.Find<User>(user => user.Id == userToAddID.UserToAddID).Any();
+                try
                 {
-                    friendsOfUser.Add(userIDs[i]);
+                    if(!isValidInput)
+                    {
+                        error.Err = "Nieprawidlowe ID uzytkownika";
+                        error.Desc = "Wprowadz ID jeszcze raz";
+                        return StatusCode(405, error);
+                    }
+                }
+                catch
+                {
+                    error.Err = "Nieprawidlowe ID uzytkownika";
+                    error.Desc = "Wprowadz ID jeszcze raz";
+                    return StatusCode(405, error);
                 }
 
-                var filter = Builders<User>.Filter.Eq(u => u.Id, id);
-                var userToUpdate = user;
-                userToUpdate.friends = friendsOfUser;
+                var addingFriend = await _userHelper.AddFriend(userToAddID.UserToAddID, user);
 
-                await _users.ReplaceOneAsync(filter, userToUpdate);
-                return Ok(_userHelper.ReturnUser(user));
+                if(addingFriend == null)
+                {
+                        error.Err = "Już jesteście znajomymi";
+                        error.Desc = "Już jesteście znajomymi, nie musisz zapraszać tego użytkownika";
+                        return StatusCode(405, error);
+                }
+                
+                return Ok(_userHelper.ReturnUserToReturn(user));
 
         }
 

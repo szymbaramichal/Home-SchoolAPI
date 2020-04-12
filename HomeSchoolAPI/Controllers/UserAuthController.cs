@@ -111,7 +111,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            return Ok(_userHelper.ReturnUser(user));
+            return Ok(_userHelper.ReturnUserToReturn(user));
         }
 
 
@@ -157,7 +157,7 @@ namespace HomeSchoolAPI.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             
-            UserToReturn user = _userHelper.ReturnUser(userFromRepo);
+            UserToReturn user = _userHelper.ReturnUserToReturn(userFromRepo);
 
             return Ok(new {
                 token = tokenHandler.WriteToken(token),

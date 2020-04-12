@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
 using HomeSchoolAPI.Models;
@@ -14,7 +15,7 @@ namespace HomeSchoolAPI.Helpers
             var database = client.GetDatabase("ELearningDB");
             _users = database.GetCollection<User>("Users");
         }
-        public UserToReturn ReturnUser(User userFromRepo)
+        public UserToReturn ReturnUserToReturn(User userFromRepo)
         {
             UserToReturn userToReturn = new UserToReturn();
             userToReturn.Id = userFromRepo.Id;
@@ -29,16 +30,34 @@ namespace HomeSchoolAPI.Helpers
             return userToReturn;
         }
 
+        public async Task<User> AddFriend(string userToAddID, User user)
+        {
+            // int size = friendsOfUser.Count;
+
+            // for (int i = 0; i < size; i++)
+            // {
+            //     if(friendsOfUser[i].Contains(userToAddID))
+            //     {
+            //         return null;
+            //     }    
+            //}
+
+            user.friends.Add(userToAddID);
+
+            var filter = Builders<User>.Filter.Eq(u => u.Id, user.Id);
+
+            var userToUpdate = user;
+            userToUpdate.friends = user.friends;
+
+            await _users.ReplaceOneAsync(filter, userToUpdate);
+            return user;
+
+        }
+
         public async Task<User> ReturnUserByID(string id)
         {
             var user = await _users.Find<User>(user => user.Id == id).FirstOrDefaultAsync();
             return user;
         }
-        public User ReturnUserByIDSync(string id)
-        {
-            var user = _users.Find<User>(user => user.Id == id).FirstOrDefault();
-            return user;
-        }
-
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using HomeSchoolAPI.Models;
 using MongoDB.Driver;
 using System.Security.Cryptography;
+using System.Collections.Generic;
 
 namespace HomeSchoolAPI.Data
 {
@@ -43,9 +44,10 @@ namespace HomeSchoolAPI.Data
         {
             byte[] passwordHash, passwordSalt;
             CreatePasswordHash(password, out passwordHash, out passwordSalt);
-
+            List<string> list = new List<string>();
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            user.friends = list;
 
             await _users.InsertOneAsync(user);
             return user;
