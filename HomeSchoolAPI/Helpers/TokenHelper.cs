@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace HomeSchoolAPI.Helpers
 {
-    public class TokenHelper
+    public class TokenHelper : ITokenHelper
     {
         public bool IsValidateToken(string token)
         {

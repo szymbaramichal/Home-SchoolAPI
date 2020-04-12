@@ -26,11 +26,14 @@ namespace HomeSchoolAPI.Controllers
         
         private readonly IConfiguration _configuration;
         private readonly IAuthRepo _repo;
+        private readonly IUserHelper _userHelper;
+        private readonly ITokenHelper _tokenHelper;
         private Error error;
-        private UserHelper userHelper;
-        public UserAuthController(IAuthRepo repo, IConfiguration configuration)
+        private String token;
+        public UserAuthController(IAuthRepo repo, IConfiguration configuration, IUserHelper userHelper, ITokenHelper tokenHelper)
         {
-            userHelper = new UserHelper();
+            _tokenHelper = tokenHelper;
+            _userHelper = userHelper;
             error = new Error();
             _configuration = configuration;
             _repo = repo;
@@ -58,6 +61,7 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadź rolę 1 lub 2";
                 return StatusCode(405, error);
             }
+
             userForRegister.Email = userForRegister.Email.ToLower();
             
             if(await _repo.UserExists(userForRegister.Email))
@@ -78,20 +82,14 @@ namespace HomeSchoolAPI.Controllers
             return StatusCode(201);
         }
 
-
         [HttpGet("loginviatoken")]
         public async Task<IActionResult> LoginViaToken()
         {
-            //getting token from header
-            String token = HttpContext.Request.Headers["Authorization"];
-            token = token.Replace("Bearer ", "");
-
-            //validating token
-            TokenHelper helper = new TokenHelper();
-            
             try
             {
-                if (!helper.IsValidateToken(token))
+                token = HttpContext.Request.Headers["Authorization"];
+                token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
                 {
                     error.Err = "Token wygasł";
                     error.Desc = "Zaloguj się od nowa";
@@ -100,13 +98,11 @@ namespace HomeSchoolAPI.Controllers
             }
             catch
             {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
             }
 
-            var id = helper.GetIdByToken(token);
-            var user = await userHelper.ReturnUserByID(id);
+            var id = _tokenHelper.GetIdByToken(token);
+            var user = await _userHelper.ReturnUserByID(id);
 
             if (user == null)
             {
@@ -115,7 +111,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            return Ok(userHelper.ReturnUser(user));
+            return Ok(_userHelper.ReturnUser(user));
         }
 
 
@@ -161,7 +157,7 @@ namespace HomeSchoolAPI.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             
-            UserToReturn user = userHelper.ReturnUser(userFromRepo);
+            UserToReturn user = _userHelper.ReturnUser(userFromRepo);
 
             return Ok(new {
                 token = tokenHandler.WriteToken(token),

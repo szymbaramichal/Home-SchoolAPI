@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace HomeSchoolAPI.Helpers
 {
-    public class UserHelper
+    public class UserHelper : IUserHelper
     {
         private readonly IMongoCollection<User> _users;
         public UserHelper()
@@ -32,6 +32,11 @@ namespace HomeSchoolAPI.Helpers
         public async Task<User> ReturnUserByID(string id)
         {
             var user = await _users.Find<User>(user => user.Id == id).FirstOrDefaultAsync();
+            return user;
+        }
+        public User ReturnUserByIDSync(string id)
+        {
+            var user = _users.Find<User>(user => user.Id == id).FirstOrDefault();
             return user;
         }
 

@@ -6,7 +6,6 @@ using HomeSchoolAPI.Helpers;
 using HomeSchoolAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace HomeSchoolAPI.Controllers
@@ -17,9 +16,17 @@ namespace HomeSchoolAPI.Controllers
     public class InvitationsController : ControllerBase
     {
         private readonly IMongoCollection<User> _users;
+
+        private readonly ITokenHelper _tokenHelper;
+        private readonly IUserHelper _userHelper;
+        private String token;
+        private Error error;
         
-        public InvitationsController()
+        public InvitationsController(ITokenHelper tokenHelper, IUserHelper userHelper)
         {
+            error = new Error();
+            _tokenHelper = tokenHelper;
+            _userHelper = userHelper;
             var client = new MongoClient("mongodb+srv://majkii2115:Kruku2115@homeschool-ruok3.mongodb.net/test?retryWrites=true&w=majority");
             var database = client.GetDatabase("ELearningDB");
             _users = database.GetCollection<User>("Users");
@@ -28,22 +35,27 @@ namespace HomeSchoolAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> AddFriend(string[] userIDs)
         {
-                //TODO: Middleware do pobierania i walidacji tokenu
-                //getting token from header
-                String token = HttpContext.Request.Headers["Authorization"];
+
+            try
+            {
+                token = HttpContext.Request.Headers["Authorization"];
                 token = token.Replace("Bearer ", "");
-
+            }
+            catch
+            {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
+            }
                 //validating token
-                TokenHelper helper = new TokenHelper();
-                UserHelper userHelper = new UserHelper();
-                if(!helper.IsValidateToken(token)) return Unauthorized("Token expired");
+                if(!_tokenHelper.IsValidateToken(token)) return Unauthorized("Token expired");
 
-                var id = helper.GetIdByToken(token);
+                var id = _tokenHelper.GetIdByToken(token);
 
                 //pobieram usera do którego dodaje znajomych
-                var user = await userHelper.ReturnUserByID(id);
+                var user = _userHelper.ReturnUserByIDSync(id);
 
                 List<string> friendsOfUser = new List<string>();
+                friendsOfUser = user.friends;
 
                 for (int i = 0; i < userIDs.Length; i++)
                 {
@@ -51,10 +63,11 @@ namespace HomeSchoolAPI.Controllers
                 }
 
                 var filter = Builders<User>.Filter.Eq(u => u.Id, id);
-                var update = Builders<User>.Update.Set(u => u.friends, friendsOfUser);
-                _users.UpdateOne(filter, update);
+                var userToUpdate = user;
+                userToUpdate.friends = friendsOfUser;
 
-                return Ok(user);
+                await _users.ReplaceOneAsync(filter, userToUpdate);
+                return Ok(_userHelper.ReturnUser(user));
 
         }
 
