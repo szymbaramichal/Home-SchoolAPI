@@ -75,6 +75,7 @@ namespace HomeSchoolAPI.Controllers
             {
                 email = userForRegister.Email,
                 userRole = userForRegister.Role
+                //ADD VALIDATION FOR USERCODE
             };
 
             var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
@@ -151,7 +152,7 @@ namespace HomeSchoolAPI.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.Now,
                 SigningCredentials = creds
             };
 

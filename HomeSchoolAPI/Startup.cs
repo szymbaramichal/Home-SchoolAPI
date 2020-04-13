@@ -28,7 +28,7 @@ namespace HomeSchoolAPI
             services.AddScoped<ITokenHelper, TokenHelper>();
             services.AddScoped<IUserHelper, UserHelper>();
             services.AddScoped<IAuthRepo, AuthRepo>();
-
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HomeSchool API", Version = "2115" });

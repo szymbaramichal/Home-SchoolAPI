@@ -15,8 +15,6 @@ namespace HomeSchoolAPI.Controllers
     [ApiController]
     public class InvitationsController : ControllerBase
     {
-        private readonly IMongoCollection<User> _users;
-
         private readonly ITokenHelper _tokenHelper;
         private readonly IUserHelper _userHelper;
         private String token;
@@ -27,13 +25,11 @@ namespace HomeSchoolAPI.Controllers
             error = new Error();
             _tokenHelper = tokenHelper;
             _userHelper = userHelper;
-            var client = new MongoClient("mongodb+srv://majkii2115:Kruku2115@homeschool-ruok3.mongodb.net/test?retryWrites=true&w=majority");
-            var database = client.GetDatabase("ELearningDB");
-            _users = database.GetCollection<User>("Users");
         }
 
 
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> AddFriend([FromBody]UserToAddDTO userToAddID)
         {
@@ -59,29 +55,28 @@ namespace HomeSchoolAPI.Controllers
 
                 //pobieram usera do którego dodaje znajomych
                 var user = await _userHelper.ReturnUserByID(id);
-                var isValidInput = _users.Find<User>(user => user.Id == userToAddID.UserToAddID).Any();
-                
-                try
+
+                if(userToAddID.UserToAddID.Length != 24)
                 {
+                    error.Err = "Nieprawidlowe ID uzytkownika";
+                    error.Desc = "ID ma dlugosc 24 znakow";
+                    return StatusCode(405, error);
+                }
+
+                var isValidInput = _userHelper.DoesUserExist(userToAddID.UserToAddID);
+                
                     if(!isValidInput)
                     {
                         error.Err = "Nieprawidlowe ID uzytkownika";
                         error.Desc = "Wprowadz ID jeszcze raz";
                         return StatusCode(405, error);
                     }
-                }
-                catch
-                {
-                    error.Err = "Nieprawidlowe ID uzytkownika";
-                    error.Desc = "Wprowadz ID jeszcze raz";
-                    return StatusCode(405, error);
-                }
 
                 var isNotAlreadyFriend = await _userHelper.AddFriend(userToAddID.UserToAddID, user);
 
                 if(isNotAlreadyFriend == null)
                 {
-                    error.Err = "Już jesteście znajomymi";
+                   error.Err = "Już jesteście znajomymi";
                     error.Desc = "Już jesteście znajomymi, nie musisz zapraszać tego użytkownika";
                     return StatusCode(409, error);
                 }

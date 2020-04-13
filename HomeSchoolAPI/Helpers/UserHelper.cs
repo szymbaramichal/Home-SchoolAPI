@@ -59,5 +59,10 @@ namespace HomeSchoolAPI.Helpers
             var user = await _users.Find<User>(user => user.Id == id).FirstOrDefaultAsync();
             return user;
         }
+
+        public bool DoesUserExist(string id)
+        {
+            return _users.Find<User>(user => user.Id == id).Any();
+        }
     }
 }
