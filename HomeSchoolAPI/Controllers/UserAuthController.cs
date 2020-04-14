@@ -152,7 +152,7 @@ namespace HomeSchoolAPI.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now,
+                Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds
             };
 
