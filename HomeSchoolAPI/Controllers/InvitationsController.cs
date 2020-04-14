@@ -29,7 +29,6 @@ namespace HomeSchoolAPI.Controllers
 
 
 
-        [Authorize]
         [HttpPut]
         public async Task<IActionResult> AddFriend([FromBody]UserToAddDTO userToAddID)
         {
@@ -63,8 +62,9 @@ namespace HomeSchoolAPI.Controllers
                     return StatusCode(405, error);
                 }
 
-                var isValidInput = _userHelper.DoesUserExist(userToAddID.UserToAddID);
-                
+                try
+                {
+                    var isValidInput = _userHelper.DoesUserExist(userToAddID.UserToAddID);
                     if(!isValidInput)
                     {
                         error.Err = "Nieprawidlowe ID uzytkownika";
@@ -72,16 +72,23 @@ namespace HomeSchoolAPI.Controllers
                         return StatusCode(405, error);
                     }
 
-                var isNotAlreadyFriend = await _userHelper.AddFriend(userToAddID.UserToAddID, user);
+                        var isNotAlreadyFriend = await _userHelper.AddFriend(userToAddID.UserToAddID, user);
 
-                if(isNotAlreadyFriend == null)
-                {
-                   error.Err = "Już jesteście znajomymi";
-                    error.Desc = "Już jesteście znajomymi, nie musisz zapraszać tego użytkownika";
-                    return StatusCode(409, error);
-                }
+                    if(isNotAlreadyFriend == null)
+                    {
+                        error.Err = "Już jesteście znajomymi";
+                        error.Desc = "Już jesteście znajomymi, nie musisz zapraszać tego użytkownika";
+                        return StatusCode(409, error);
+                    }
                 
-                return Ok(_userHelper.ReturnUserToReturn(user));
+                    return Ok(_userHelper.ReturnUserToReturn(user));
+                }
+                catch (System.Exception)
+                {
+                    error.Err = "Nieprawidlowe ID uzytkownika";
+                    error.Desc = "Wprowadz ID jeszcze raz";
+                    return StatusCode(405, error);
+                }
 
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -70,11 +71,16 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadź inny adres email";
                 return StatusCode(405, error);
             }
-
+            List<string> list1 = new List<string>();
             var userToCreate = new User 
             {
                 email = userForRegister.Email,
-                userRole = userForRegister.Role
+                userRole = userForRegister.Role,
+                classMember = list1,
+                name = "test",
+                surrname = "test",
+                friends = list1,
+                pendingInvitations = list1
                 //ADD VALIDATION FOR USERCODE
             };
 

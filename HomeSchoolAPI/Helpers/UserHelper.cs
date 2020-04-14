@@ -25,14 +25,13 @@ namespace HomeSchoolAPI.Helpers
             userToReturn.userRole = userFromRepo.userRole;
             userToReturn.friends = userFromRepo.friends;
             userToReturn.userCode = userFromRepo.userCode;
+            userToReturn.classMember = userFromRepo.classMember;
 
             return userToReturn;
         }
 
         public async Task<User> AddFriend(string userToAddID, User user)
         {
-
-            int size = user.friends.Count;
 
             for (int i = 0; i < user.friends.Count; i++)
             {
@@ -45,11 +44,7 @@ namespace HomeSchoolAPI.Helpers
             user.friends.Add(userToAddID);
 
             var filter = Builders<User>.Filter.Eq(u => u.Id, user.Id);
-
-            var userToUpdate = user;
-            userToUpdate.friends = user.friends;
-
-            await _users.ReplaceOneAsync(filter, userToUpdate);
+            await _users.ReplaceOneAsync(filter, user);
             return user;
 
         }

@@ -17,8 +17,8 @@ namespace HomeSchoolAPI.Models
         public byte[] PasswordSalt { get; set; }
         public int userRole { get; set; } //0 -> student
         public string userCode { get; set; } // ID of class
+        public List<string> classMember { get; set; }
         public List<string> friends { get; set; }
-        public string classMember { get; set; }
         public List<string> pendingInvitations { get; set; }
     }
 }
