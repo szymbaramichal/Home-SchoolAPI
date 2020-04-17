@@ -9,7 +9,8 @@ namespace HomeSchoolAPI.Helpers
     {
         UserToReturn ReturnUserToReturn(User userFromRepo);
         Task<User> ReturnUserByID(string id);
-        Task<User> AddFriend(string userToAddID, User user);
         bool DoesUserExist(string id);
+        bool DoesUserExistByEmail(string email);
+        Task<User> ReturnUserByMail(string email);
     }
 }

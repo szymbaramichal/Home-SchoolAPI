@@ -46,8 +46,6 @@ namespace HomeSchoolAPI.Data
             CreatePasswordHash(password, out passwordHash, out passwordSalt);
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
-            //add pendingInvitations and checking if user is student than userCode is required
-
             await _users.InsertOneAsync(user);
             return user;
 

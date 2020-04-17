@@ -23,30 +23,10 @@ namespace HomeSchoolAPI.Helpers
             userToReturn.name = userFromRepo.name;
             userToReturn.surrname = userFromRepo.surrname;
             userToReturn.userRole = userFromRepo.userRole;
-            userToReturn.friends = userFromRepo.friends;
             userToReturn.userCode = userFromRepo.userCode;
             userToReturn.classMember = userFromRepo.classMember;
 
             return userToReturn;
-        }
-
-        public async Task<User> AddFriend(string userToAddID, User user)
-        {
-
-            for (int i = 0; i < user.friends.Count; i++)
-            {
-                if(user.friends[i].Contains(userToAddID))
-                {
-                    return null;
-                }    
-            }
-
-            user.friends.Add(userToAddID);
-
-            var filter = Builders<User>.Filter.Eq(u => u.Id, user.Id);
-            await _users.ReplaceOneAsync(filter, user);
-            return user;
-
         }
 
         public async Task<User> ReturnUserByID(string id)
@@ -54,10 +34,20 @@ namespace HomeSchoolAPI.Helpers
             var user = await _users.Find<User>(user => user.Id == id).FirstOrDefaultAsync();
             return user;
         }
+        public async Task<User> ReturnUserByMail(string email)
+        {
+            var user = await _users.Find<User>(user => user.email == email).FirstOrDefaultAsync();
+            return user;
+        }
 
         public bool DoesUserExist(string id)
         {
             return _users.Find<User>(user => user.Id == id).Any();
         }
+        public bool DoesUserExistByEmail(string email)
+        {
+            return _users.Find<User>(user => user.email == email).Any();
+        }
+
     }
 }

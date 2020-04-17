@@ -21,11 +21,13 @@ namespace HomeSchoolAPI.Controllers
         private IMongoCollection<User> _users;
         private IMongoDatabase database;
         private IUserHelper _userHelper;
-        private readonly ITokenHelper _tokenHelper;
+        private ITokenHelper _tokenHelper;
+        private IClassHelper _classHelper;
         private String token;
         private Error error;
-        public ClassController(ITokenHelper tokenHelper, IUserHelper userHelper)
+        public ClassController(ITokenHelper tokenHelper, IUserHelper userHelper, IClassHelper classHelper)
         {
+            _classHelper = classHelper;
             var client = new MongoClient("mongodb+srv://majkii2115:Kruku2115@homeschool-ruok3.mongodb.net/test?retryWrites=true&w=majority");
             database = client.GetDatabase("ELearningDB");
             _users = database.GetCollection<User>("Users");
@@ -34,9 +36,10 @@ namespace HomeSchoolAPI.Controllers
             _userHelper = userHelper;
         }
 
-        [HttpPost("create")]
+        [HttpPost("createClass")]
         public async Task<IActionResult> CreateClass(ClassToCreateDTO classToCreate)
         {
+            #region TokenValidation
             try
             {
                 token = HttpContext.Request.Headers["Authorization"];
@@ -53,7 +56,8 @@ namespace HomeSchoolAPI.Controllers
                 error.Err = "Nieprawidlowy token";
                 error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
-            }            
+            }         
+            #endregion   
 
                 List<string> list1 = new List<string>();
                 var id = _tokenHelper.GetIdByToken(token);
@@ -61,35 +65,8 @@ namespace HomeSchoolAPI.Controllers
 
                 if(creator.userRole == 1)
                 {
-                    try
-                    {
-                        await database.CreateCollectionAsync(classToCreate.className);
-                    }
-                    catch
-                    {
-                        error.Err = "Już istnieje taka klasa";
-                        error.Desc = "Proszę wybrać inną nazwę klasy";
-                        return StatusCode(409, error);
-                    }
-                    _class = database.GetCollection<Class>(classToCreate.className);
-                    Class classToAdd = new Class 
-                    {
-                        className = classToCreate.className,
-                        creatorID = creator.Id,
-                        schoolName = classToCreate.schoolName,
-                        membersAmount = 0,
-                        members = list1,
-                        subjects = list1,
-                    };
-                    
-                    await _class.InsertOneAsync(classToAdd);
-
-                    var klasa = await _class.Find<Class>(x => x.className == classToCreate.className).FirstOrDefaultAsync();
-                    var filter = Builders<User>.Filter.Eq(u => u.Id, creator.Id);
-                    creator.classMember.Add(klasa.className);
-                    await _users.ReplaceOneAsync(filter, creator);
-                    
-                    return Ok(classToAdd);
+                    var createdClass = await _classHelper.CreateClass(creator, classToCreate.className, classToCreate.schoolName);
+                    return Ok(createdClass);
                 }
                 else
                 {
@@ -99,9 +76,10 @@ namespace HomeSchoolAPI.Controllers
                 }
         }
     
-        [HttpPut("add")]
+        [HttpPut("addMemberToClass")]
         public async Task<IActionResult> AddMemberToClass([FromBody]AddToClassDTO addToClassDTO)
         {
+            #region TokenValidation
             try
             {
                 token = HttpContext.Request.Headers["Authorization"];
@@ -118,7 +96,9 @@ namespace HomeSchoolAPI.Controllers
                 error.Err = "Nieprawidlowy token";
                 error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
-            }
+            }         
+            #endregion 
+
             List<string> list1 = new List<string>();
             var id = _tokenHelper.GetIdByToken(token);
             var teacher = await _userHelper.ReturnUserByID(id);
@@ -146,35 +126,27 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(409, error);
             }
             var filter = Builders<Class>.Filter.Eq(c => c.Id, document.Id);
-            try
+
+            if(_userHelper.DoesUserExistByEmail(addToClassDTO.UserToAddEmail))
             {
-                if(_userHelper.DoesUserExist(addToClassDTO.UserToAddID))
+                for (int i = 0; i < document.members.Count; i++)
                 {
-                    for (int i = 0; i < document.members.Count; i++)
+                    if(document.members.Contains(addToClassDTO.UserToAddEmail))
                     {
-                        if(document.members.Contains(addToClassDTO.UserToAddID))
-                        {
-                            error.Err = "Ten użytkownik już należy do klasy";
-                            error.Desc = "Nie możesz dodać użytkownika poraz drugi";
-                            return StatusCode(409, error);
-                        }
+                        error.Err = "Ten użytkownik już należy do klasy";
+                        error.Desc = "Nie możesz dodać użytkownika poraz drugi";
+                        return StatusCode(409, error);
                     }
-                    document.members.Add(addToClassDTO.UserToAddID);
-                    document.membersAmount++;
-                    await _class.ReplaceOneAsync(filter, document);
-                    return Ok(document);
                 }
-                else
-                {
-                    error.Err = "Niepoprawne ID uzytkownika";
-                    error.Desc = "Wprowadz poprawne ID uzytkownika";
-                    return StatusCode(409, error);
-                }
+                document.members.Add(addToClassDTO.UserToAddEmail);
+                document.membersAmount++;
+                await _class.ReplaceOneAsync(filter, document);
+                return Ok(document);
             }
-            catch
+            else
             {
-                error.Err = "Niepoprawne ID uzytkownika";
-                error.Desc = "Wprowadz poprawne ID uzytkownika";
+                error.Err = "Niepoprawny email uzytkownika";
+                error.Desc = "Wprowadz poprawne email uzytkownika";
                 return StatusCode(409, error);
             }
         }

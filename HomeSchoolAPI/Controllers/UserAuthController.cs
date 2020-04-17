@@ -29,10 +29,12 @@ namespace HomeSchoolAPI.Controllers
         private readonly IAuthRepo _repo;
         private readonly IUserHelper _userHelper;
         private readonly ITokenHelper _tokenHelper;
+        private readonly IClassHelper _classHelper;
         private Error error;
         private String token;
-        public UserAuthController(IAuthRepo repo, IConfiguration configuration, IUserHelper userHelper, ITokenHelper tokenHelper)
+        public UserAuthController(IAuthRepo repo, IConfiguration configuration, IUserHelper userHelper, ITokenHelper tokenHelper, IClassHelper classHelper)
         {
+            _classHelper = classHelper;
             _tokenHelper = tokenHelper;
             _userHelper = userHelper;
             error = new Error();
@@ -50,12 +52,39 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadź wszystkie dane";
                 return StatusCode(405, error);
             }
-            if(userForRegister.Role == 0 && String.IsNullOrWhiteSpace(userForRegister.UserCode))
+
+            List<string> list1 = new List<string>();
+            
+            var userToCreate = new User 
             {
-                error.Err = "Błędny kod od nauczyciela";
-                error.Desc = "Prosze wprowadzić poprawny kod od nauczyciela";
-                return StatusCode(405, error);
+                email = userForRegister.Email,
+                userRole = userForRegister.Role,
+                classMember = list1,
+                name = "test",
+                surrname = "test",
+                pendingInvitations = list1
+            };
+
+            if(userForRegister.Role == 0)
+            {
+                var classa = await _classHelper.ReturnClassByID(userForRegister.UserCode);
+
+                if(classa == null)
+                {
+                    error.Err = "Błędny kod klasy";
+                    error.Desc = "Prosze wprowadzić poprawny kod od nauczyciela";
+                    return StatusCode(405, error);
+                }
+
+                userToCreate.classMember.Add(classa.Id);
+                userToCreate.userCode = classa.Id;
             }
+
+            if(userForRegister.Role == 1)
+            {
+                userToCreate.userCode = null;
+            }
+
             if(userForRegister.Role != 1 && userForRegister.Role != 0)
             {
                 error.Err = "Zła rola użytkownika";
@@ -71,27 +100,15 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadź inny adres email";
                 return StatusCode(405, error);
             }
-            List<string> list1 = new List<string>();
-            var userToCreate = new User 
-            {
-                email = userForRegister.Email,
-                userRole = userForRegister.Role,
-                classMember = list1,
-                name = "test",
-                surrname = "test",
-                friends = list1,
-                pendingInvitations = list1
-                //ADD VALIDATION FOR USERCODE
-            };
-
             var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
 
-            return StatusCode(201);
+            return StatusCode(201, "Pomyślnie stworzono konto!");
         }
 
         [HttpGet("loginviatoken")]
         public async Task<IActionResult> LoginViaToken()
         {
+            #region TokenValidation
             try
             {
                 token = HttpContext.Request.Headers["Authorization"];
@@ -110,6 +127,8 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
+            #endregion
+
             var id = _tokenHelper.GetIdByToken(token);
             var user = await _userHelper.ReturnUserByID(id);
 
@@ -120,7 +139,12 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            return Ok(_userHelper.ReturnUserToReturn(user));
+            var userToReturn = _userHelper.ReturnUserToReturn(user);
+            var userClasses = await _classHelper.ReturnAllClasses(id);
+            return Ok(new {
+                userToReturn,
+                userClasses
+            });
         }
 
 
@@ -158,7 +182,7 @@ namespace HomeSchoolAPI.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.Now.AddDays(7),
                 SigningCredentials = creds
             };
 
@@ -166,11 +190,13 @@ namespace HomeSchoolAPI.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             
-            UserToReturn user = _userHelper.ReturnUserToReturn(userFromRepo);
+            UserToReturn userToReturn = _userHelper.ReturnUserToReturn(userFromRepo);
 
+            var userClasses = await _classHelper.ReturnAllClasses(userFromRepo.Id);
             return Ok(new {
                 token = tokenHandler.WriteToken(token),
-                user
+                userToReturn,
+                userClasses
             });
 
         }

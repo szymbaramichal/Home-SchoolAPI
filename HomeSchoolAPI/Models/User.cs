@@ -18,7 +18,6 @@ namespace HomeSchoolAPI.Models
         public int userRole { get; set; } //0 -> student
         public string userCode { get; set; } // ID of class
         public List<string> classMember { get; set; }
-        public List<string> friends { get; set; }
         public List<string> pendingInvitations { get; set; }
     }
 }
