@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.Data;
 using HomeSchoolAPI.DTOs;
 using HomeSchoolAPI.Helpers;
 using HomeSchoolAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 
 namespace HomeSchoolAPI.Controllers
 {
@@ -17,9 +15,6 @@ namespace HomeSchoolAPI.Controllers
     [ApiController]
     public class ClassController : ControllerBase
     {
-        private IMongoCollection<Class> _class;
-        private IMongoCollection<User> _users;
-        private IMongoDatabase database;
         private IUserHelper _userHelper;
         private ITokenHelper _tokenHelper;
         private IClassHelper _classHelper;
@@ -28,9 +23,6 @@ namespace HomeSchoolAPI.Controllers
         public ClassController(ITokenHelper tokenHelper, IUserHelper userHelper, IClassHelper classHelper)
         {
             _classHelper = classHelper;
-            var client = new MongoClient("mongodb+srv://majkii2115:Kruku2115@homeschool-ruok3.mongodb.net/test?retryWrites=true&w=majority");
-            database = client.GetDatabase("ELearningDB");
-            _users = database.GetCollection<User>("Users");
             error = new Error();
             _tokenHelper = tokenHelper;
             _userHelper = userHelper;
@@ -57,11 +49,26 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
             }         
-            #endregion   
+            #endregion
+
+            if(String.IsNullOrWhiteSpace(classToCreate.className) || String.IsNullOrWhiteSpace(classToCreate.schoolName))
+            {
+                error.Err = "Uzupełnij wszystkie pola";
+                error.Desc = "Żadne z pól nie może zostać puste";
+                return StatusCode(405, error);  
+            }
+
+            User creator = new User();   
 
                 List<string> list1 = new List<string>();
                 var id = _tokenHelper.GetIdByToken(token);
-                var creator = await _userHelper.ReturnUserByID(id);
+                creator = await _userHelper.ReturnUserByID(id);
+                if(creator == null)
+                {
+                    error.Err = "Nieprawidlowy token";
+                    error.Desc = "Wprowadz token jeszcze raz";
+                    return StatusCode(405, error);
+                }
 
                 if(creator.userRole == 1)
                 {
@@ -98,7 +105,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }         
             #endregion 
-
+            Class classe = new Class();
             List<string> list1 = new List<string>();
             var id = _tokenHelper.GetIdByToken(token);
             var teacher = await _userHelper.ReturnUserByID(id);
@@ -108,40 +115,26 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Nie jesteś nauczycielem";
                 return StatusCode(405, error);
             }
-            try
+            
+            classe = await _classHelper.ReturnClassByID(addToClassDTO.ClassID);
+
+            if(classe == null)
             {
-                _class = database.GetCollection<Class>(addToClassDTO.ClassName);
-            }
-            catch
-            {
-                error.Err = "Niepoprawna nazwa klasy";
-                error.Desc = "Wprowadź poprawną nazwę klasy";
+                error.Err = "ROBIĘ ŹLE A CHCIAŁEM DOBRZE";
+                error.Desc = "Wprowadź poprawne ID klasy";
                 return StatusCode(409, error);
             }
-            var document = await _class.Find<Class>(x => x.className == addToClassDTO.ClassName).FirstOrDefaultAsync();
-            if(document == null)
-            {
-                error.Err = "Niepoprawna nazwa klasy";
-                error.Desc = "Wprowadź poprawną nazwę klasy";
-                return StatusCode(409, error);
-            }
-            var filter = Builders<Class>.Filter.Eq(c => c.Id, document.Id);
 
             if(_userHelper.DoesUserExistByEmail(addToClassDTO.UserToAddEmail))
             {
-                for (int i = 0; i < document.members.Count; i++)
+                var classToReturn = await _classHelper.AddMemberToClass(addToClassDTO.UserToAddEmail, classe);
+                if(classToReturn == null)
                 {
-                    if(document.members.Contains(addToClassDTO.UserToAddEmail))
-                    {
-                        error.Err = "Ten użytkownik już należy do klasy";
-                        error.Desc = "Nie możesz dodać użytkownika poraz drugi";
-                        return StatusCode(409, error);
-                    }
+                    error.Err = "Ten uczeń już jest w tej klasie";
+                    error.Desc = "Nie musisz dodawać tego użytkownika";
+                    return StatusCode(409, error);
                 }
-                document.members.Add(addToClassDTO.UserToAddEmail);
-                document.membersAmount++;
-                await _class.ReplaceOneAsync(filter, document);
-                return Ok(document);
+                return Ok(classToReturn);
             }
             else
             {

@@ -63,7 +63,7 @@ namespace HomeSchoolAPI.Data
         public async Task<bool> UserExists(string email)
         {
             if(await _users.Find<User>(user => user.email == email).AnyAsync()) return true;
-            return false;
+            else return false;
         }
     }
 }

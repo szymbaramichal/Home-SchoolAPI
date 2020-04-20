@@ -24,7 +24,7 @@ namespace HomeSchoolAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
+            services.AddScoped<ISubjectHelper, SubjectHelper>();
             services.AddScoped<IClassHelper, ClassHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
             services.AddScoped<IUserHelper, UserHelper>();

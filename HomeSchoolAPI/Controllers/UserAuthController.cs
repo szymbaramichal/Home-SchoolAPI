@@ -58,14 +58,30 @@ namespace HomeSchoolAPI.Controllers
             var userToCreate = new User 
             {
                 email = userForRegister.Email,
-                userRole = userForRegister.Role,
+                userRole = userForRegister.UserRole,
                 classMember = list1,
                 name = "test",
                 surrname = "test",
                 pendingInvitations = list1
             };
 
-            if(userForRegister.Role == 0)
+            var isUserExisting = await _repo.UserExists(userForRegister.Email);
+            
+            if(isUserExisting)
+            {
+                error.Err = "Ten adres email jest już zajęty";
+                error.Desc = "Wprowadź inny adres email";
+                return StatusCode(405, error);
+            }
+
+            if(userForRegister.UserRole != 1 && userForRegister.UserRole != 0)
+            {
+                error.Err = "Zła rola użytkownika";
+                error.Desc = "Wprowadź rolę 1 lub 0";
+                return StatusCode(405, error);
+            }
+
+            if(userForRegister.UserRole == 0)
             {
                 var classa = await _classHelper.ReturnClassByID(userForRegister.UserCode);
 
@@ -75,34 +91,30 @@ namespace HomeSchoolAPI.Controllers
                     error.Desc = "Prosze wprowadzić poprawny kod od nauczyciela";
                     return StatusCode(405, error);
                 }
-
                 userToCreate.classMember.Add(classa.Id);
                 userToCreate.userCode = classa.Id;
             }
 
-            if(userForRegister.Role == 1)
+            if(userForRegister.UserRole == 1)
             {
                 userToCreate.userCode = null;
             }
 
-            if(userForRegister.Role != 1 && userForRegister.Role != 0)
-            {
-                error.Err = "Zła rola użytkownika";
-                error.Desc = "Wprowadź rolę 1 lub 2";
-                return StatusCode(405, error);
-            }
-
             userForRegister.Email = userForRegister.Email.ToLower();
-            
-            if(await _repo.UserExists(userForRegister.Email))
-            {
-                error.Err = "Ten adres email jest już zajęty";
-                error.Desc = "Wprowadź inny adres email";
-                return StatusCode(405, error);
-            }
+
             var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
 
-            return StatusCode(201, "Pomyślnie stworzono konto!");
+            if(userForRegister.UserRole == 0)
+            {
+                var classa = await _classHelper.ReturnClassByID(userForRegister.UserCode);
+                classa.membersAmount++;
+                var userr = await _userHelper.ReturnUserByMail(userForRegister.Email);
+                classa.members.Add(userr.Id);
+                await _classHelper.ReplaceClassInfo(classa);
+            }
+            var user = _userHelper.ReturnUserToReturn(userToCreate);
+
+            return StatusCode(201, user);
         }
 
         [HttpGet("loginviatoken")]
