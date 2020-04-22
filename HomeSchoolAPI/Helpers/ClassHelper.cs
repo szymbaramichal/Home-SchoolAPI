@@ -91,6 +91,8 @@ namespace HomeSchoolAPI.Helpers
             List<string> subjects = new List<string>();
             await database.CreateCollectionAsync(className);
 
+            await database.CreateCollectionAsync(className+"_su");
+
             _class = database.GetCollection<Class>(className);
             Class classToAdd = new Class 
             {
@@ -107,6 +109,7 @@ namespace HomeSchoolAPI.Helpers
             await _class.InsertOneAsync(classToAdd);
             var klasa = await _class.Find<Class>(x => x.className == className).FirstOrDefaultAsync();
             await database.RenameCollectionAsync(className, klasa.Id);
+            await database.RenameCollectionAsync(className+"_su", klasa.Id+"_su");
             var filter = Builders<User>.Filter.Eq(u => u.Id, creator.Id);
             creator.classMember.Add(klasa.Id);
             await _users.ReplaceOneAsync(filter, creator);

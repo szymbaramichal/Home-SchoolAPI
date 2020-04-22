@@ -25,7 +25,6 @@ namespace HomeSchoolAPI.Helpers
             userToReturn.userRole = userFromRepo.userRole;
             userToReturn.userCode = userFromRepo.userCode;
             userToReturn.classMember = userFromRepo.classMember;
-
             return userToReturn;
         }
 

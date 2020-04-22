@@ -13,6 +13,7 @@ namespace HomeSchoolAPI.Helpers
         private IMongoDatabase database;
         private readonly IUserHelper _userHelper;
         private readonly IClassHelper _classHelper;
+        private IMongoCollection<Class> _classes;
         public SubjectHelper(IUserHelper userHelper, IClassHelper classHelper)
         {
             var client = new MongoClient("mongodb+srv://majkii2115:Kruku2115@homeschool-ruok3.mongodb.net/test?retryWrites=true&w=majority");
@@ -23,16 +24,8 @@ namespace HomeSchoolAPI.Helpers
         }
         public async Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName)
         {
-            try
-            {
-                await database.CreateCollectionAsync(classToEdit.Id+"_su_"+subjectName);
-            }
-            catch
-            {
-                return null;
-            }
-            _subjects = database.GetCollection<Subject>(classToEdit.Id+"_su_"+subjectName);
-
+            _subjects = database.GetCollection<Subject>(classToEdit.Id+"_su");        
+            
             Subject subject = new Subject();
             subject.name = subjectName;
             subject.teacherId = teacherId;
@@ -60,5 +53,28 @@ namespace HomeSchoolAPI.Helpers
             return subjectReturn;
 
         }
+
+        public async Task<List<Subject>> ReturnAllSubjects(List<Class> userClases)
+        {
+            List<Subject> subjects = new List<Subject>();
+
+            for (int i = 0; i < userClases.Count; i++)
+            {
+                var klasy = userClases.ToArray();
+                var klasa = klasy[i];
+
+                for (int j = 0; j < klasa.subjects.Count; j++)
+                {
+                    var subjectss = klasa.subjects.ToArray();
+                    var subject = subjectss[j];
+                    _subjects = database.GetCollection<Subject>(klasa.Id+"_su");
+                    
+                    var temat = await _subjects.Find<Subject>(x => x.Id == subject).FirstOrDefaultAsync();
+                    subjects.Add(temat);
+                }
+            } 
+            return subjects;
+        }
+
     }
 }

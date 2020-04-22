@@ -26,7 +26,7 @@ namespace HomeSchoolAPI.Controllers
             _subjectHelper = subjectHelper;
         }
  
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> CreateSubject(CreateSubjectDTO createSubjectDTO)
         {
 

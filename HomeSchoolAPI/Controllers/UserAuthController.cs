@@ -30,9 +30,10 @@ namespace HomeSchoolAPI.Controllers
         private readonly IUserHelper _userHelper;
         private readonly ITokenHelper _tokenHelper;
         private readonly IClassHelper _classHelper;
+        private readonly ISubjectHelper _subjectHelper;
         private Error error;
         private String token;
-        public UserAuthController(IAuthRepo repo, IConfiguration configuration, IUserHelper userHelper, ITokenHelper tokenHelper, IClassHelper classHelper)
+        public UserAuthController(IAuthRepo repo, IConfiguration configuration, IUserHelper userHelper, ITokenHelper tokenHelper, IClassHelper classHelper, ISubjectHelper subjectHelper)
         {
             _classHelper = classHelper;
             _tokenHelper = tokenHelper;
@@ -40,6 +41,7 @@ namespace HomeSchoolAPI.Controllers
             error = new Error();
             _configuration = configuration;
             _repo = repo;
+            _subjectHelper = subjectHelper;
         }
 
 
@@ -153,9 +155,11 @@ namespace HomeSchoolAPI.Controllers
 
             var userToReturn = _userHelper.ReturnUserToReturn(user);
             var userClasses = await _classHelper.ReturnAllClasses(id);
+            var classSubjects = await _subjectHelper.ReturnAllSubjects(userClasses);
             return Ok(new {
                 userToReturn,
-                userClasses
+                userClasses,
+                classSubjects
             });
         }
 
@@ -205,10 +209,14 @@ namespace HomeSchoolAPI.Controllers
             UserToReturn userToReturn = _userHelper.ReturnUserToReturn(userFromRepo);
 
             var userClasses = await _classHelper.ReturnAllClasses(userFromRepo.Id);
+            
+            var classSubjects = await _subjectHelper.ReturnAllSubjects(userClasses);
+
             return Ok(new {
                 token = tokenHandler.WriteToken(token),
                 userToReturn,
-                userClasses
+                userClasses,
+                classSubjects
             });
 
         }

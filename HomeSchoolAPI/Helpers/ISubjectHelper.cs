@@ -8,5 +8,6 @@ namespace HomeSchoolAPI.Helpers
     public interface ISubjectHelper
     {
         Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName);
+        Task<List<Subject>> ReturnAllSubjects(List<Class> userClases);
     }
 }
