@@ -13,17 +13,13 @@ namespace HomeSchoolAPI.Controllers
     {
         private Error error;
         private String token;
-        private readonly IUserHelper _userHelper;
         private readonly ITokenHelper _tokenHelper;
-        private readonly IClassHelper _classHelper;
-        private readonly ISubjectHelper _subjectHelper;
-        public SubjectController(IUserHelper userHelper, ITokenHelper tokenHelper, IClassHelper classHelper, ISubjectHelper subjectHelper)
+        private readonly IApiHelper _apiHelper;
+        public SubjectController(ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
             error = new Error();
-            _classHelper = classHelper;
-            _userHelper = userHelper;
+            _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
-            _subjectHelper = subjectHelper;
         }
  
         [HttpPost("add")]
@@ -50,7 +46,7 @@ namespace HomeSchoolAPI.Controllers
             }
             #endregion
 
-            var user = await _userHelper.ReturnUserByMail(createSubjectDTO.userToAddEmail);
+            var user = await _apiHelper.ReturnUserByMail(createSubjectDTO.userToAddEmail);
 
             if(user == null || user.userRole == 0)
             {
@@ -59,7 +55,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            var classForUser = await _classHelper.ReturnClassByID(createSubjectDTO.classID);
+            var classForUser = await _apiHelper.ReturnClassByID(createSubjectDTO.classID);
 
             if(classForUser == null)
             {
@@ -68,7 +64,9 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            var subject = await _subjectHelper.AddSubjectToClass(user.Id, classForUser, createSubjectDTO.subjectName);
+            var subject = await _apiHelper.AddSubjectToClass(user.Id, classForUser, createSubjectDTO.subjectName);
+            await _apiHelper.ReplaceClassInfo(subject.classObj);
+            
 
             if(subject == null)
             {

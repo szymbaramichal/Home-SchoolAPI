@@ -27,21 +27,17 @@ namespace HomeSchoolAPI.Controllers
         
         private readonly IConfiguration _configuration;
         private readonly IAuthRepo _repo;
-        private readonly IUserHelper _userHelper;
+        private readonly IApiHelper _apiHelper;
         private readonly ITokenHelper _tokenHelper;
-        private readonly IClassHelper _classHelper;
-        private readonly ISubjectHelper _subjectHelper;
         private Error error;
         private String token;
-        public UserAuthController(IAuthRepo repo, IConfiguration configuration, IUserHelper userHelper, ITokenHelper tokenHelper, IClassHelper classHelper, ISubjectHelper subjectHelper)
+        public UserAuthController(IAuthRepo repo, IConfiguration configuration, ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
-            _classHelper = classHelper;
+            _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
-            _userHelper = userHelper;
             error = new Error();
             _configuration = configuration;
             _repo = repo;
-            _subjectHelper = subjectHelper;
         }
 
 
@@ -85,7 +81,7 @@ namespace HomeSchoolAPI.Controllers
 
             if(userForRegister.UserRole == 0)
             {
-                var classa = await _classHelper.ReturnClassByID(userForRegister.UserCode);
+                var classa = await _apiHelper.ReturnClassByID(userForRegister.UserCode);
 
                 if(classa == null)
                 {
@@ -108,13 +104,13 @@ namespace HomeSchoolAPI.Controllers
 
             if(userForRegister.UserRole == 0)
             {
-                var classa = await _classHelper.ReturnClassByID(userForRegister.UserCode);
+                var classa = await _apiHelper.ReturnClassByID(userForRegister.UserCode);
                 classa.membersAmount++;
-                var userr = await _userHelper.ReturnUserByMail(userForRegister.Email);
+                var userr = await _apiHelper.ReturnUserByMail(userForRegister.Email);
                 classa.members.Add(userr.Id);
-                await _classHelper.ReplaceClassInfo(classa);
+                await _apiHelper.ReplaceClassInfo(classa);
             }
-            var user = _userHelper.ReturnUserToReturn(userToCreate);
+            var user = _apiHelper.ReturnUserToReturn(userToCreate);
 
             return StatusCode(201, user);
         }
@@ -144,7 +140,7 @@ namespace HomeSchoolAPI.Controllers
             #endregion
 
             var id = _tokenHelper.GetIdByToken(token);
-            var user = await _userHelper.ReturnUserByID(id);
+            var user = await _apiHelper.ReturnUserByID(id);
 
             if (user == null)
             {
@@ -153,14 +149,8 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            var userToReturn = _userHelper.ReturnUserToReturn(user);
-            var userClasses = await _classHelper.ReturnAllClasses(id);
-            var classSubjects = await _subjectHelper.ReturnAllSubjects(userClasses);
-            return Ok(new {
-                userToReturn,
-                userClasses,
-                classSubjects
-            });
+            var userToReturn = await _apiHelper.ReturnUserToReturn(user);
+            return Ok(userToReturn);
         }
 
 
@@ -206,17 +196,11 @@ namespace HomeSchoolAPI.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             
-            UserToReturn userToReturn = _userHelper.ReturnUserToReturn(userFromRepo);
-
-            var userClasses = await _classHelper.ReturnAllClasses(userFromRepo.Id);
-            
-            var classSubjects = await _subjectHelper.ReturnAllSubjects(userClasses);
+            UserToReturn userToReturn = await _apiHelper.ReturnUserToReturn(userFromRepo);
 
             return Ok(new {
                 token = tokenHandler.WriteToken(token),
-                userToReturn,
-                userClasses,
-                classSubjects
+                userToReturn
             });
 
         }

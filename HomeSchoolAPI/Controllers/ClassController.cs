@@ -15,17 +15,15 @@ namespace HomeSchoolAPI.Controllers
     [ApiController]
     public class ClassController : ControllerBase
     {
-        private IUserHelper _userHelper;
         private ITokenHelper _tokenHelper;
-        private IClassHelper _classHelper;
+        private IApiHelper _apiHelper;
         private String token;
         private Error error;
-        public ClassController(ITokenHelper tokenHelper, IUserHelper userHelper, IClassHelper classHelper)
+        public ClassController(ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
-            _classHelper = classHelper;
+            _apiHelper = apiHelper;
             error = new Error();
             _tokenHelper = tokenHelper;
-            _userHelper = userHelper;
         }
 
         [HttpPost("createClass")]
@@ -62,7 +60,7 @@ namespace HomeSchoolAPI.Controllers
 
                 List<string> list1 = new List<string>();
                 var id = _tokenHelper.GetIdByToken(token);
-                creator = await _userHelper.ReturnUserByID(id);
+                creator = await _apiHelper.ReturnUserByID(id);
                 if(creator == null)
                 {
                     error.Err = "Nieprawidlowy token";
@@ -72,7 +70,7 @@ namespace HomeSchoolAPI.Controllers
 
                 if(creator.userRole == 1)
                 {
-                    var createdClass = await _classHelper.CreateClass(creator, classToCreate.className, classToCreate.schoolName);
+                    var createdClass = await _apiHelper.CreateClass(creator, classToCreate.className, classToCreate.schoolName);
                     return Ok(createdClass);
                 }
                 else
@@ -108,7 +106,7 @@ namespace HomeSchoolAPI.Controllers
             Class classe = new Class();
             List<string> list1 = new List<string>();
             var id = _tokenHelper.GetIdByToken(token);
-            var teacher = await _userHelper.ReturnUserByID(id);
+            var teacher = await _apiHelper.ReturnUserByID(id);
             if(teacher.userRole != 1)
             {
                 error.Err = "Nie możesz dodać ucznia do klasy";
@@ -116,7 +114,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
             
-            classe = await _classHelper.ReturnClassByID(addToClassDTO.ClassID);
+            classe = await _apiHelper.ReturnClassByID(addToClassDTO.ClassID);
 
             if(classe == null)
             {
@@ -125,9 +123,9 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(409, error);
             }
 
-            if(_userHelper.DoesUserExistByEmail(addToClassDTO.UserToAddEmail))
+            if(_apiHelper.DoesUserExistByEmail(addToClassDTO.UserToAddEmail))
             {
-                var classToReturn = await _classHelper.AddMemberToClass(addToClassDTO.UserToAddEmail, classe);
+                var classToReturn = await _apiHelper.AddMemberToClass(addToClassDTO.UserToAddEmail, classe);
                 if(classToReturn == null)
                 {
                     error.Err = "Ten uczeń już jest w tej klasie";

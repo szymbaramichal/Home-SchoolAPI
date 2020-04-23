@@ -24,10 +24,8 @@ namespace HomeSchoolAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddScoped<ISubjectHelper, SubjectHelper>();
-            services.AddScoped<IClassHelper, ClassHelper>();
+            services.AddScoped<IApiHelper, ApiHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
-            services.AddScoped<IUserHelper, UserHelper>();
             services.AddScoped<IAuthRepo, AuthRepo>();
             
             services.AddSwaggerGen(c =>
