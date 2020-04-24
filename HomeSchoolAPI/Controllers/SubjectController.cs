@@ -25,7 +25,6 @@ namespace HomeSchoolAPI.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> CreateSubject(CreateSubjectDTO createSubjectDTO)
         {
-
             #region TokenValidation
             try
             {
@@ -54,17 +53,16 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadz email nauczyciela jeszcze raz";
                 return StatusCode(405, error);
             }
+            var classObj = await _apiHelper.ReturnClassByID(createSubjectDTO.classID);
 
-            var classForUser = await _apiHelper.ReturnClassByID(createSubjectDTO.classID);
-
-            if(classForUser == null)
+            if(classObj == null)
             {
-                error.Err = "Nie ma takiej klasy pajacu";
+                error.Err = "Nie ma takiej klasy";
                 error.Desc = "Wprowadź ID klasy jeszcze raz";
                 return StatusCode(405, error);
             }
 
-            var subject = await _apiHelper.AddSubjectToClass(user.Id, classForUser, createSubjectDTO.subjectName);
+            var subject = await _apiHelper.AddSubjectToClass(user.Id, classObj, createSubjectDTO.subjectName);
             await _apiHelper.ReplaceClassInfo(subject.classObj);
             
 

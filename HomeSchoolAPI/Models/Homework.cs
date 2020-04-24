@@ -14,6 +14,5 @@ namespace HomeSchoolAPI.Models
         public string description { get; set; }
         public string subjectID { get; set; }
         public List<string> responses { get; set; }
-        public List<IFormFile> files { get; set; }
     }
 }

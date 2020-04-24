@@ -110,9 +110,9 @@ namespace HomeSchoolAPI.Controllers
                 classa.members.Add(userr.Id);
                 await _apiHelper.ReplaceClassInfo(classa);
             }
-            var user = _apiHelper.ReturnUserToReturn(userToCreate);
+            var user = await _apiHelper.ReturnUserToReturn(userToCreate);
 
-            return StatusCode(201, user);
+            return Ok(user);
         }
 
         [HttpGet("loginviatoken")]

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
 using HomeSchoolAPI.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace HomeSchoolAPI.Helpers
 {
@@ -19,6 +20,8 @@ namespace HomeSchoolAPI.Helpers
         Task<User> ReturnUserByID(string id);
         bool DoesUserExistByEmail(string email);
         Task<User> ReturnUserByMail(string email);
+        Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description);
+        Task<Subject> ReturnSubjectByTeacherID(string classID,string id);
     }
 
 }
