@@ -48,8 +48,8 @@ namespace HomeSchoolAPI.Controllers
             var subject = await _apiHelper.ReturnSubjectByTeacherID(homeworkToAddDTO.classID, id);
             if(subject == null)
             {
-                error.Err = "Złe ID klasy";
-                error.Desc = "Wprowadź poprawne ID klasy";
+                error.Err = "Nie jestes nauczycielem tej klasy";
+                error.Desc = "Nie mozesz dodac przedmiotu";
                 return StatusCode(405, error);
             }
             var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAddDTO.name, homeworkToAddDTO.description);

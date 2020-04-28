@@ -22,6 +22,7 @@ namespace HomeSchoolAPI.Helpers
         Task<User> ReturnUserByMail(string email);
         Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description);
         Task<Subject> ReturnSubjectByTeacherID(string classID,string id);
+        Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject);
     }
 
 }

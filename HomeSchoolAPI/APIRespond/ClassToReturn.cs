@@ -11,6 +11,6 @@ namespace HomeSchoolAPI.APIRespond
         public string schoolName { get; set; }
         public int membersAmount { get; set; }
         public List<string> members { get; set; }
-        public List<Subject> subjects { get; set; }
+        public List<SubjectToReturn> subjects { get; set; }
     }
 }
