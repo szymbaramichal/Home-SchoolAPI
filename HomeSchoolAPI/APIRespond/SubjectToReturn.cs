@@ -8,7 +8,7 @@ namespace HomeSchoolAPI.APIRespond
         public string Id { get; set; }
         public string name { get; set; }
         public string classID { get; set; }
-        public string teacherId { get; set; }
+        public string teacherID { get; set; }
         public List<Homework> homeworks { get; set; }
     }
 }

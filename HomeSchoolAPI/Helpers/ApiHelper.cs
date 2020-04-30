@@ -22,7 +22,7 @@ namespace HomeSchoolAPI.Helpers
         }
 
         #region UsersMethods
-        public async Task<UserToReturn> ReturnUserToReturn(User user)
+        public UserToReturn ReturnUserToReturn(User user)
         {
             UserToReturn userToReturn = new UserToReturn();
             userToReturn.Id = user.Id;
@@ -31,14 +31,6 @@ namespace HomeSchoolAPI.Helpers
             userToReturn.surrname = user.surrname;
             userToReturn.userRole = user.userRole;
             userToReturn.userCode = user.userCode;
-            userToReturn.classes = new List<ClassToReturn>();
-            var classes = user.classMember.ToArray();
-            for (int i = 0; i < user.classMember.Count; i++)
-            {
-                var classObj = await ReturnClassByID(classes[i]);
-                var classa = await ReturnClassToReturn(classObj);
-                userToReturn.classes.Add(classa);
-            }
             return userToReturn;
         }
         public async Task<User> ReturnUserByID(string id)
@@ -252,7 +244,6 @@ namespace HomeSchoolAPI.Helpers
             var subject = await _subjects.Find<Subject>(x => x.teacherId == id).FirstOrDefaultAsync();
             return subject;
         }
-
         public async Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject)
         {
             _homeworks = database.GetCollection<Homework>(subject.classID+"_ho");
@@ -260,7 +251,7 @@ namespace HomeSchoolAPI.Helpers
                 Id = subject.Id,
                 name = subject.name,
                 classID = subject.classID,
-                teacherId = subject.teacherId,
+                teacherID = subject.teacherId,
                 homeworks = new List<Homework>()
             };
             

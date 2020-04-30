@@ -110,9 +110,36 @@ namespace HomeSchoolAPI.Controllers
                 classa.members.Add(userr.Id);
                 await _apiHelper.ReplaceClassInfo(classa);
             }
-            var user = await _apiHelper.ReturnUserToReturn(userToCreate);
 
-            return Ok(user);
+            var userFromRepo = await _repo.LoginUser(userForRegister.Email.ToLower(), userForRegister.Password);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
+                new Claim(ClaimTypes.Email, userFromRepo.email)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(7),
+                SigningCredentials = creds
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            var userToReturn = _apiHelper.ReturnUserToReturn(userToCreate);
+
+            return Ok(new {
+                token = tokenHandler.WriteToken(token),
+                userToReturn
+            });
         }
 
         [HttpGet("loginviatoken")]
@@ -149,11 +176,21 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            var userToReturn = await _apiHelper.ReturnUserToReturn(user);
-            return Ok(userToReturn);
+            var classes = new List<ClassToReturn>();
+            var userClasses = user.classMember.ToArray();
+            for (int i = 0; i < user.classMember.Count; i++)
+            {
+                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
+                classes.Add(await _apiHelper.ReturnClassToReturn(classObj));
+            }
+
+
+            var userToReturn = _apiHelper.ReturnUserToReturn(user);
+            return Ok(new {
+                userToReturn,
+                classes
+            });
         }
-
-
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDTO userForLogin)
@@ -196,11 +233,20 @@ namespace HomeSchoolAPI.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             
-            UserToReturn userToReturn = await _apiHelper.ReturnUserToReturn(userFromRepo);
+            UserToReturn userToReturn = _apiHelper.ReturnUserToReturn(userFromRepo);
+
+            var classes = new List<ClassToReturn>();
+            var userClasses = userFromRepo.classMember.ToArray();
+            for (int i = 0; i < userFromRepo.classMember.Count; i++)
+            {
+                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
+                classes.Add(await _apiHelper.ReturnClassToReturn(classObj));
+            }
 
             return Ok(new {
                 token = tokenHandler.WriteToken(token),
-                userToReturn
+                userToReturn,
+                classes
             });
 
         }

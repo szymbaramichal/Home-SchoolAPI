@@ -16,7 +16,7 @@ namespace HomeSchoolAPI.Helpers
         Task<ClassToReturn> ReturnClassToReturn(Class classObj);
         Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName);
         Task<List<Subject>> ReturnAllSubjects(List<Class> userClases);
-        Task<UserToReturn> ReturnUserToReturn(User userFromRepo);
+        UserToReturn ReturnUserToReturn(User user);
         Task<User> ReturnUserByID(string id);
         bool DoesUserExistByEmail(string email);
         Task<User> ReturnUserByMail(string email);

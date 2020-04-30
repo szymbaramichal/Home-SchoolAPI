@@ -45,8 +45,11 @@ namespace HomeSchoolAPI.Controllers
             }         
             #endregion
             var id = _tokenHelper.GetIdByToken(token);
+            var classObj = await _apiHelper.ReturnClassByID(homeworkToAddDTO.classID);
+
             var subject = await _apiHelper.ReturnSubjectByTeacherID(homeworkToAddDTO.classID, id);
-            if(subject == null)
+
+            if(subject == null && classObj.creatorID != id)
             {
                 error.Err = "Nie jestes nauczycielem tej klasy";
                 error.Desc = "Nie mozesz dodac przedmiotu";
