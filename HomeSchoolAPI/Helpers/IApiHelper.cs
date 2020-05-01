@@ -13,7 +13,7 @@ namespace HomeSchoolAPI.Helpers
         Task<List<Class>> ReturnAllClasses(string userId);
         Task<Class> ReplaceClassInfo(Class classToChange);
         Task<Class> AddMemberToClass(string email, Class classe);
-        Task<ClassToReturn> ReturnClassToReturn(Class classObj);
+        Task<ClassToReturn> ReturnClassToReturn(Class classObj, string userID);
         Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName);
         Task<List<Subject>> ReturnAllSubjects(List<Class> userClases);
         UserToReturn ReturnUserToReturn(User user);

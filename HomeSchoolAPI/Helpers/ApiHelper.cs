@@ -50,7 +50,7 @@ namespace HomeSchoolAPI.Helpers
         #endregion 
 
         #region ClasessMethods
-        public async Task<ClassToReturn> ReturnClassToReturn(Class classObj)
+        public async Task<ClassToReturn> ReturnClassToReturn(Class classObj, string userID)
         {
             _subjects = database.GetCollection<Subject>(classObj.Id+"_su");
             ClassToReturn classToReturn = new ClassToReturn();
@@ -63,13 +63,28 @@ namespace HomeSchoolAPI.Helpers
             classToReturn.members = classObj.members;
             classToReturn.subjects = subjects;
             var subjectsObj = classObj.subjects.ToArray();
-            for (int i = 0; i < classObj.subjects.Count; i++)
+
+            if(classToReturn.creatorID == userID)
             {
-                var subjectObj = await _subjects.Find<Subject>(x => x.Id == subjectsObj[i]).FirstOrDefaultAsync();
-                var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
-                classToReturn.subjects.Add(subjectToReturn);
+                for (int i = 0; i < classObj.subjects.Count; i++)
+                {
+                    var subjectObj = await _subjects.Find<Subject>(x => x.Id == subjectsObj[i]).FirstOrDefaultAsync();
+                    var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
+                    classToReturn.subjects.Add(subjectToReturn);
+                }
+                return classToReturn;
             }
-            return classToReturn;
+            else
+            {
+                var subjectObj = await _subjects.Find<Subject>(x => x.teacherId == userID).FirstOrDefaultAsync();
+                var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
+                if(subjectObj != null)
+                {
+                    classToReturn.subjects = new List<SubjectToReturn>();
+                    classToReturn.subjects.Add(subjectToReturn);
+                }
+                return classToReturn;
+            }
         }
         public async Task<Class> ReturnClassByID(string id)
         {

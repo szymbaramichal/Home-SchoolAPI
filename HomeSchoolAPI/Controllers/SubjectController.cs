@@ -22,7 +22,7 @@ namespace HomeSchoolAPI.Controllers
             _tokenHelper = tokenHelper;
         }
  
-        [HttpPost("add")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateSubject(CreateSubjectDTO createSubjectDTO)
         {
             #region TokenValidation

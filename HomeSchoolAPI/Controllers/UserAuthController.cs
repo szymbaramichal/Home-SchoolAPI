@@ -52,7 +52,6 @@ namespace HomeSchoolAPI.Controllers
             }
 
             List<string> list1 = new List<string>();
-            
             var userToCreate = new User 
             {
                 email = userForRegister.Email,
@@ -81,42 +80,49 @@ namespace HomeSchoolAPI.Controllers
 
             if(userForRegister.UserRole == 0)
             {
-                var classa = await _apiHelper.ReturnClassByID(userForRegister.UserCode);
+                var classObj = await _apiHelper.ReturnClassByID(userForRegister.UserCode);
 
-                if(classa == null)
+                if(classObj == null)
                 {
                     error.Err = "Błędny kod klasy";
                     error.Desc = "Prosze wprowadzić poprawny kod od nauczyciela";
                     return StatusCode(405, error);
                 }
-                userToCreate.classMember.Add(classa.Id);
-                userToCreate.userCode = classa.Id;
+
+                userToCreate.classMember.Add(classObj.Id);
+                userToCreate.userCode = classObj.Id;
+                userForRegister.Email = userForRegister.Email.ToLower();
+                var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
+
+                classObj.membersAmount++;
+                var userr = await _apiHelper.ReturnUserByMail(userForRegister.Email);
+                classObj.members.Add(userr.Id);
+                await _apiHelper.ReplaceClassInfo(classObj);
             }
 
             if(userForRegister.UserRole == 1)
             {
                 userToCreate.userCode = null;
+                userForRegister.Email = userForRegister.Email.ToLower();
+                var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
             }
 
-            userForRegister.Email = userForRegister.Email.ToLower();
+            var user = await _repo.LoginUser(userForRegister.Email.ToLower(), userForRegister.Password);
 
-            var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
-
-            if(userForRegister.UserRole == 0)
+            var classes = new List<ClassToReturn>();
+            var userClasses = user.classMember.ToArray();
+            for (int i = 0; i < user.classMember.Count; i++)
             {
-                var classa = await _apiHelper.ReturnClassByID(userForRegister.UserCode);
-                classa.membersAmount++;
-                var userr = await _apiHelper.ReturnUserByMail(userForRegister.Email);
-                classa.members.Add(userr.Id);
-                await _apiHelper.ReplaceClassInfo(classa);
+                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
+                classes.Add(await _apiHelper.ReturnClassToReturn(classObj, user.Id));
             }
 
-            var userFromRepo = await _repo.LoginUser(userForRegister.Email.ToLower(), userForRegister.Password);
-
+            UserToReturn userToReturn = _apiHelper.ReturnUserToReturn(user);
+            #region TokenCreating
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                new Claim(ClaimTypes.Email, userFromRepo.email)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
@@ -133,12 +139,11 @@ namespace HomeSchoolAPI.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            var userToReturn = _apiHelper.ReturnUserToReturn(userToCreate);
-
+            #endregion 
             return Ok(new {
                 token = tokenHandler.WriteToken(token),
-                userToReturn
+                userToReturn,
+                classes
             });
         }
 
@@ -181,11 +186,11 @@ namespace HomeSchoolAPI.Controllers
             for (int i = 0; i < user.classMember.Count; i++)
             {
                 var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
-                classes.Add(await _apiHelper.ReturnClassToReturn(classObj));
+                classes.Add(await _apiHelper.ReturnClassToReturn(classObj, id));
             }
 
-
             var userToReturn = _apiHelper.ReturnUserToReturn(user);
+
             return Ok(new {
                 userToReturn,
                 classes
@@ -202,9 +207,9 @@ namespace HomeSchoolAPI.Controllers
                 return Unauthorized(error);
             }
 
-            var userFromRepo = await _repo.LoginUser(userForLogin.Email.ToLower(), userForLogin.Password);
+            var user = await _repo.LoginUser(userForLogin.Email.ToLower(), userForLogin.Password);
 
-            if(userFromRepo == null) 
+            if(user == null) 
             {
                 error.Err = "Niepoprawny email lub hasło";
                 error.Desc = "Uzupełnij pola od nowa";
@@ -212,10 +217,20 @@ namespace HomeSchoolAPI.Controllers
             }
         
 
+            var classes = new List<ClassToReturn>();
+            var userClasses = user.classMember.ToArray();
+            for (int i = 0; i < user.classMember.Count; i++)
+            {
+                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
+                classes.Add(await _apiHelper.ReturnClassToReturn(classObj, user.Id));
+            }
+
+            UserToReturn userToReturn = _apiHelper.ReturnUserToReturn(user);
+            #region TokenCreating
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                new Claim(ClaimTypes.Email, userFromRepo.email)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
@@ -232,16 +247,7 @@ namespace HomeSchoolAPI.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            
-            UserToReturn userToReturn = _apiHelper.ReturnUserToReturn(userFromRepo);
-
-            var classes = new List<ClassToReturn>();
-            var userClasses = userFromRepo.classMember.ToArray();
-            for (int i = 0; i < userFromRepo.classMember.Count; i++)
-            {
-                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
-                classes.Add(await _apiHelper.ReturnClassToReturn(classObj));
-            }
+            #endregion 
 
             return Ok(new {
                 token = tokenHandler.WriteToken(token),

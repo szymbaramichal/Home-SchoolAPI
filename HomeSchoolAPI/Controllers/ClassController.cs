@@ -26,7 +26,7 @@ namespace HomeSchoolAPI.Controllers
             _tokenHelper = tokenHelper;
         }
 
-        [HttpPost("createClass")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateClass(ClassToCreateDTO classToCreate)
         {
             #region TokenValidation
@@ -81,7 +81,7 @@ namespace HomeSchoolAPI.Controllers
                 }
         }
     
-        [HttpPut("addMemberToClass")]
+        [HttpPut("addMember")]
         public async Task<IActionResult> AddMemberToClass([FromBody]AddToClassDTO addToClassDTO)
         {
             #region TokenValidation
