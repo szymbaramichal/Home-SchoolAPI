@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
@@ -20,7 +21,7 @@ namespace HomeSchoolAPI.Helpers
         Task<User> ReturnUserByID(string id);
         bool DoesUserExistByEmail(string email);
         Task<User> ReturnUserByMail(string email);
-        Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description);
+        Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, string time);
         Task<Subject> ReturnSubjectByTeacherID(string classID,string id);
         Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject);
     }

@@ -44,6 +44,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
             #endregion
+            var id = _tokenHelper.GetIdByToken(token);
 
             var user = await _apiHelper.ReturnUserByMail(createSubjectDTO.userToAddEmail);
 
@@ -53,12 +54,20 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadz email nauczyciela jeszcze raz";
                 return StatusCode(405, error);
             }
+
             var classObj = await _apiHelper.ReturnClassByID(createSubjectDTO.classID);
 
             if(classObj == null)
             {
                 error.Err = "Nie ma takiej klasy";
                 error.Desc = "Wprowadź ID klasy jeszcze raz";
+                return StatusCode(405, error);
+            }
+
+            if(classObj.creatorID != id)
+            {
+                error.Err = "Nie jestes wychowawcą";
+                error.Desc = "Nie możesz tworzyć przedmiotu";
                 return StatusCode(405, error);
             }
 

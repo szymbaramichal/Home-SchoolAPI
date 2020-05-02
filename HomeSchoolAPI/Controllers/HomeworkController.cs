@@ -55,7 +55,7 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Nie mozesz dodac przedmiotu";
                 return StatusCode(405, error);
             }
-            var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAddDTO.name, homeworkToAddDTO.description);
+            var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAddDTO.name, homeworkToAddDTO.description, homeworkToAddDTO.time);
             return Ok(homework);
             
         }
