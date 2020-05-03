@@ -11,8 +11,8 @@ namespace HomeSchoolAPI.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string homeworkID { get; set; }
+        public string senderID { get; set; }
         public string description { get; set; }
-        public List<string> responses { get; set; }
         public DateTime sendTime { get; set; }
     }
 }

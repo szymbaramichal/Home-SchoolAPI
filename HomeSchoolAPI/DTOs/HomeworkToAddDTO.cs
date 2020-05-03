@@ -9,6 +9,6 @@ namespace HomeSchoolAPI.DTOs
         public string classID { get; set; }
         public string name { get; set; }
         public string description { get; set; }
-        public string time { get; set; }
+        public DateTime time { get; set; }
     }
 }

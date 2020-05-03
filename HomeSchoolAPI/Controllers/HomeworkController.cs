@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
 using HomeSchoolAPI.DTOs;
 using HomeSchoolAPI.Helpers;
+using HomeSchoolAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeSchoolAPI.Controllers
@@ -22,7 +23,7 @@ namespace HomeSchoolAPI.Controllers
             _apiHelper = apiHelper;
         }
 
-        [HttpPost("create")]
+        [HttpPost("createHomework")]
         public async Task<IActionResult> AddHomeworkToSubject(HomeworkToAddDTO homeworkToAddDTO)
         {
             #region TokenValidation
@@ -57,7 +58,46 @@ namespace HomeSchoolAPI.Controllers
             }
             var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAddDTO.name, homeworkToAddDTO.description, homeworkToAddDTO.time);
             return Ok(homework);
-            
+        }
+
+        [HttpPost("createResponse")]
+        public async Task<IActionResult> CreateResponse(ResponseToHomeworkDTO responseToHomework)
+        {
+            #region TokenValidation
+            try
+            {
+                token = HttpContext.Request.Headers["Authorization"];
+                token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
+                {
+                    error.Err = "Token wygasł";
+                    error.Desc = "Zaloguj się od nowa";
+                    return StatusCode(405, error);
+                }
+            }
+            catch
+            {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
+                return StatusCode(405, error);
+            }   
+            var id = _tokenHelper.GetIdByToken(token);      
+            #endregion
+            Response response = new Response()
+            {
+                homeworkID = responseToHomework.homeworkID,
+                senderID = id,
+                description = responseToHomework.description,
+                sendTime = DateTime.Now,
+            };
+            var homework = await _apiHelper.CreateResponse(response, responseToHomework.classID);
+            if(homework == null)
+            {
+                error.Err = "Nie możesz już oddać zadania";
+                error.Desc = "Musisz się pospieszyć na przyszłość";
+                return StatusCode(405, error);
+            }
+            return Ok(homework);
         }
 
     }

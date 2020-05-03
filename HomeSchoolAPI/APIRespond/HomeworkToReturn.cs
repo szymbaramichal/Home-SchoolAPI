@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using HomeSchoolAPI.Models;
 
-namespace HomeSchoolAPI.Models
+namespace HomeSchoolAPI.APIRespond
 {
-    public class Homework
+    public class HomeworkToReturn
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
         public string subjectID { get; set; }
-        public List<string> responses { get; set; }
+        public List<Response> responses { get; set; }
         public DateTime createDate { get; set; }
         public DateTime endDate { get; set; }
     }

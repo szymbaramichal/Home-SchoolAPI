@@ -9,6 +9,6 @@ namespace HomeSchoolAPI.APIRespond
         public string name { get; set; }
         public string classID { get; set; }
         public string teacherID { get; set; }
-        public List<Homework> homeworks { get; set; }
+        public List<HomeworkToReturn> homeworks { get; set; }
     }
 }

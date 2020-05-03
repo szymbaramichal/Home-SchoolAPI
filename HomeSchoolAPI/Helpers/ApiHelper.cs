@@ -14,6 +14,7 @@ namespace HomeSchoolAPI.Helpers
         private IMongoCollection<User> _users;
         private IMongoCollection<Subject> _subjects;
         private IMongoCollection<Homework> _homeworks;
+        private IMongoCollection<Response> _responses;
         private IMongoDatabase database; 
         public ApiHelper()
         {
@@ -71,7 +72,7 @@ namespace HomeSchoolAPI.Helpers
                 for (int i = 0; i < classObj.subjects.Count; i++)
                 {
                     var subjectObj = await _subjects.Find<Subject>(x => x.Id == subjectsObj[i]).FirstOrDefaultAsync();
-                    var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
+                    var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
                     classToReturn.subjects.Add(subjectToReturn);
                 }
                 return classToReturn;
@@ -83,12 +84,12 @@ namespace HomeSchoolAPI.Helpers
                     var subjectObj = await _subjects.Find<Subject>(x => x.Id == subjectsObj[i]).FirstOrDefaultAsync();
                     if(subjectObj.teacherId == userID)
                     {
-                        var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
+                        var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
                         classToReturn.subjects.Add(subjectToReturn);
                     }
                     else
                     {
-                        var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
+                        var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
                         subjectsForStudent.Add(subjectToReturn);
                     }
                 }
@@ -97,13 +98,6 @@ namespace HomeSchoolAPI.Helpers
                 {
                     classToReturn.subjects = subjectsForStudent;
                 }
-                //var subjectObj = await _subjects.Find<Subject>(x => x.teacherId == userID).FirstOrDefaultAsync();
-                //var subjectToReturn = await ReturnSubjectToReturn(subjectObj);
-                //if(subjectObj != null)
-                //{
-                //   classToReturn.subjects = new List<SubjectToReturn>();
-                //    classToReturn.subjects.Add(subjectToReturn);
-                //}
                 return classToReturn;
             }
         }
@@ -281,7 +275,7 @@ namespace HomeSchoolAPI.Helpers
             var subject = await _subjects.Find<Subject>(x => x.teacherId == id).FirstOrDefaultAsync();
             return subject;
         }
-        public async Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject)
+        public async Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject, string userID)
         {
             _homeworks = database.GetCollection<Homework>(subject.classID+"_ho");
             SubjectToReturn subjectToReturn = new SubjectToReturn {
@@ -289,7 +283,7 @@ namespace HomeSchoolAPI.Helpers
                 name = subject.name,
                 classID = subject.classID,
                 teacherID = subject.teacherId,
-                homeworks = new List<Homework>()
+                homeworks = new List<HomeworkToReturn>()
             };
             
             var homeworks = subject.homeworks.ToArray();
@@ -297,13 +291,14 @@ namespace HomeSchoolAPI.Helpers
             for (int i = 0; i < subject.homeworks.Count; i++)
             {
                 var homeworkObj = await _homeworks.Find<Homework>(x => x.Id == homeworks[i]).FirstOrDefaultAsync();
-                subjectToReturn.homeworks.Add(homeworkObj);
+                subjectToReturn.homeworks.Add(await ReturnHomeworkToReturn(homeworkObj, subject.classID, userID));
             }
             return subjectToReturn;
         }
         #endregion
   
-        public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, string time)
+        #region HomeworkMethods
+        public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time)
         {
             _homeworks = database.GetCollection<Homework>(subject.classID+"_ho");
             _subjects = database.GetCollection<Subject>(subject.classID+"_su");
@@ -313,15 +308,76 @@ namespace HomeSchoolAPI.Helpers
                 description = description,
                 subjectID = subject.Id,
                 createDate = DateTime.Now,
-                endDate = DateTime.Parse(time),
+                endDate = time,
                 responses = new List<string>()
             };
             await _homeworks.InsertOneAsync(homework);
-            var homeworkFromDB = await _homeworks.Find<Homework>(x => x.description == description && x.endDate == DateTime.Parse(time)).FirstOrDefaultAsync();
+            var homeworkFromDB = await _homeworks.Find<Homework>(x => x.description == description && x.endDate == time && x.name == name && x.subjectID == subject.Id).FirstOrDefaultAsync();
+            await database.CreateCollectionAsync(homeworkFromDB.Id+"_re");
             subject.homeworks.Add(homeworkFromDB.Id);
             var filter = Builders<Subject>.Filter.Eq(x => x.Id, subject.Id);
             await _subjects.ReplaceOneAsync(filter, subject);
             return homeworkFromDB;
         }
+
+        public async Task<Homework> CreateResponse(Response response, string classID)
+        {
+            try
+            {
+                _responses = database.GetCollection<Response>(response.homeworkID+"_re");
+                _homeworks = database.GetCollection<Homework>(classID+"_ho");
+            }
+            catch
+            {
+                return null;
+            }
+            await _responses.InsertOneAsync(response);
+            var homework = await _homeworks.Find<Homework>(x => x.Id == response.homeworkID).FirstOrDefaultAsync();
+            
+            if(DateTime.Compare(DateTime.Now, homework.endDate) > 0)
+            {
+                return null;
+            }
+
+            homework.responses.Add(response.Id);
+            var filter = Builders<Homework>.Filter.Eq(x => x.Id, homework.Id);
+            await _homeworks.ReplaceOneAsync(filter, homework);
+            return homework; 
+        }
+        
+        public async Task<HomeworkToReturn> ReturnHomeworkToReturn(Homework homework, string classID, string userID)
+        {
+            HomeworkToReturn homeworkToReturn = new HomeworkToReturn {
+                Id = homework.Id,
+                name = homework.name,
+                description = homework.description,
+                subjectID = homework.subjectID,
+                responses = new List<Response>(),
+                createDate = homework.createDate,
+                endDate = homework.endDate,
+            };
+            
+            List<Response> userResponses = new List<Response>();
+            _responses = database.GetCollection<Response>(homework.Id+"_re");
+            _subjects = database.GetCollection<Subject>(classID+"_su");
+            var subject = await _subjects.Find<Subject>(x => x.Id == homework.subjectID).FirstOrDefaultAsync();
+            for (int i = 0; i < homework.responses.Count; i++)
+            {
+                var response = await _responses.Find<Response>(x => x.Id == homework.responses[i]).FirstOrDefaultAsync();
+                if(response.senderID == userID) userResponses.Add(response);
+                homeworkToReturn.responses.Add(response);
+            }
+            if(subject.teacherId == userID)
+            {
+                return homeworkToReturn;
+            }
+            else
+            {
+                homeworkToReturn.responses = userResponses;
+                return homeworkToReturn;            
+            }
+        }
+        
+        #endregion
     }
 }
