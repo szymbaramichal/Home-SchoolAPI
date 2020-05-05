@@ -11,9 +11,8 @@ namespace HomeSchoolAPI.Helpers
         #region Class
         Task<Class> ReturnClassByID(string id);
         Task<Class> CreateClass(User creator, string className, string schoolName);
-        Task<List<Class>> ReturnAllClasses(string userId);
         Task<Class> ReplaceClassInfo(Class classToChange);
-        Task<Class> AddMemberToClass(string email, Class classe);
+        Task<Class> AddMemberToClass(string email, Class classObj);
         Task<ClassToReturn> ReturnClassToReturn(Class classObj, string userID);
         Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName);
         #endregion
@@ -33,8 +32,8 @@ namespace HomeSchoolAPI.Helpers
         #endregion
         #region Response
         Task<Homework> CreateResponse(Response response, string classID);
+        Task<Response> PutMark(string homeworkID, string responseID, string mark);
         #endregion
-    
     }
 
 }

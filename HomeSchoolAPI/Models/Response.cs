@@ -12,6 +12,9 @@ namespace HomeSchoolAPI.Models
         public string Id { get; set; }
         public string homeworkID { get; set; }
         public string senderID { get; set; }
+        public string senderName { get; set; }
+        public string senderSurname { get; set; }
+        public string mark { get; set; }
         public string description { get; set; }
         public DateTime sendTime { get; set; }
     }

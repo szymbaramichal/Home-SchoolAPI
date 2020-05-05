@@ -53,7 +53,7 @@ namespace HomeSchoolAPI.Controllers
             if(subject == null && classObj.creatorID != id)
             {
                 error.Err = "Nie jestes nauczycielem tej klasy";
-                error.Desc = "Nie mozesz dodac przedmiotu";
+                error.Desc = "Nie mozesz dodac zadania";
                 return StatusCode(405, error);
             }
             var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAddDTO.name, homeworkToAddDTO.description, homeworkToAddDTO.time);
@@ -81,12 +81,16 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
             }   
-            var id = _tokenHelper.GetIdByToken(token);      
+            var id = _tokenHelper.GetIdByToken(token);
+            var user = await _apiHelper.ReturnUserByID(id);   
             #endregion
             Response response = new Response()
             {
                 homeworkID = responseToHomework.homeworkID,
                 senderID = id,
+                senderName = user.name,
+                senderSurname = user.surrname,
+                mark = "",
                 description = responseToHomework.description,
                 sendTime = DateTime.Now,
             };

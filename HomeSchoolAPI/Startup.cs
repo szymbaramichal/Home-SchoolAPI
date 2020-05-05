@@ -57,7 +57,7 @@ namespace HomeSchoolAPI
 
             app.UseRouting();
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             app.UseAuthorization();
