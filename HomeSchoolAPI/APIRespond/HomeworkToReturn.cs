@@ -13,5 +13,6 @@ namespace HomeSchoolAPI.APIRespond
         public List<Response> responses { get; set; }
         public DateTime createDate { get; set; }
         public DateTime endDate { get; set; }
+        public string[] files { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using HomeSchoolAPI.APIRespond;
 using HomeSchoolAPI.DTOs;
 using HomeSchoolAPI.Helpers;
 using HomeSchoolAPI.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeSchoolAPI.Controllers
@@ -24,7 +25,7 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpPost("createHomework")]
-        public async Task<IActionResult> AddHomeworkToSubject(HomeworkToAddDTO homeworkToAddDTO)
+        public async Task<IActionResult> AddHomeworkToSubject(HomeworkToAddDTO homeworkToAdd)
         {
             #region TokenValidation
             try
@@ -46,9 +47,9 @@ namespace HomeSchoolAPI.Controllers
             }         
             #endregion
             var id = _tokenHelper.GetIdByToken(token);
-            var classObj = await _apiHelper.ReturnClassByID(homeworkToAddDTO.classID);
+            var classObj = await _apiHelper.ReturnClassByID(homeworkToAdd.classID);
 
-            var subject = await _apiHelper.ReturnSubjectByTeacherID(homeworkToAddDTO.classID, id);
+            var subject = await _apiHelper.ReturnSubjectByTeacherID(homeworkToAdd.classID, id);
 
             if(subject == null && classObj.creatorID != id)
             {
@@ -56,8 +57,18 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Nie mozesz dodac zadania";
                 return StatusCode(405, error);
             }
-            var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAddDTO.name, homeworkToAddDTO.description, homeworkToAddDTO.time);
-            return Ok(homework);
+
+            try
+            {
+                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.name, homeworkToAdd.description, homeworkToAdd.time);
+                return Ok(homework);
+            }
+            catch
+            {
+                error.Err = "Nie jestes nauczycielem tej klasy";
+                error.Desc = "Nie mozesz dodac zadania";
+                return StatusCode(405, error);
+            }
         }
 
         [HttpPost("createResponse")]

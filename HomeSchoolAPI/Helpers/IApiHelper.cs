@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
 using HomeSchoolAPI.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HomeSchoolAPI.Helpers
 {
@@ -29,6 +31,9 @@ namespace HomeSchoolAPI.Helpers
         #region Homework
         Task<HomeworkToReturn> ReturnHomeworkToReturn(Homework homework, string classID, string userID);
         Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time);
+        Task<Homework> UploadFileToHomework(IFormFile file, string classID, Homework homework, string senderID);
+        Task<Homework> ReturnHomeworkByIDs(string classID, string homeworkID);
+        Task<FileStreamResult> ReturnFileBySenderID(string homeworkID, string fileID);
         #endregion
         #region Response
         Task<Homework> CreateResponse(Response response, string classID);
