@@ -1,6 +1,9 @@
 .vscode
-ELearning/HomeSchoolAPI/.vscode
-ELearning/HomeSchoolAPI/.vs
-ELearning/HomeSchoolAPI/.config
-ELearning/HomeSchoolAPI/bin
-ELearning/HomeSchoolAPI/obj
+HomeSchoolAPI/.vscode
+HomeSchoolAPI/.vs
+HomeSchoolAPI/.config
+HomeSchoolAPI/bin
+HomeSchoolAPI/obj
+FileStorageAPI/obj
+FileStorageAPI/appsettings.json
+HomeSchoolAPI/appsettings.json
