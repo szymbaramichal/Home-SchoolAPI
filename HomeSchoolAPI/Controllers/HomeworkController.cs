@@ -60,7 +60,13 @@ namespace HomeSchoolAPI.Controllers
 
             try
             {
-                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.name, homeworkToAdd.description, homeworkToAdd.time);
+                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.name, homeworkToAdd.description, homeworkToAdd.time, homeworkToAdd.filesID);
+                if(homework == null)
+                {
+                    error.Err = "Złe ID pliku";
+                    error.Desc = "Nie mozesz dodac zadania";
+                    return StatusCode(405, error);
+                }
                 return Ok(homework);
             }
             catch

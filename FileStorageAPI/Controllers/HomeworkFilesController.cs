@@ -34,46 +34,45 @@ namespace FileStorageAPI.Controllers
         [HttpPost("returnBySenderID")]
         public async Task<FileStreamResult> ReturnFilesFromHomework(ReturnBySenderIDDTO returnBySender)
         {
-            var homework = await _apiHelper.ReturnHomeworkByIDs(returnBySender.classID, returnBySender.homeworkID);
-            var file = await _apiHelper.ReturnFileBySenderID(returnBySender.homeworkID, returnBySender.fileID);
+            var file = await _apiHelper.ReturnFileBySenderID(returnBySender.classID, returnBySender.fileID);
             return file;
         }
 
-        [HttpPost("{classID}/{homeworkID}")]
-        public async Task<IActionResult> UploadFileToHomework(string homeworkID, string classID, IFormFile file)
+        [HttpPost("{classID}")]
+        public async Task<IActionResult> UploadFileToHomework(string classID, IFormFile file)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }   
-            var id = _tokenHelper.GetIdByToken(token);
-            #endregion
-
+            // #region TokenValidation
+            // try
+            // {
+            //     token = HttpContext.Request.Headers["Authorization"];
+            //     token = token.Replace("Bearer ", "");
+            //     if (!_tokenHelper.IsValidateToken(token))
+            //     {
+            //         error.Err = "Token wygasł";
+            //         error.Desc = "Zaloguj się od nowa";
+            //         return StatusCode(405, error);
+            //     }
+            // }
+            // catch
+            // {
+            //     error.Err = "Nieprawidlowy token";
+            //     error.Desc = "Wprowadz token jeszcze raz";
+            //     return StatusCode(405, error);
+            // }   
+            // var id = _tokenHelper.GetIdByToken(token);
+            // #endregion
+            var id = "5eb548822838553f9038b45f";
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))
             {
-                var homework = await _apiHelper.ReturnHomeworkByIDs(classID, homeworkID);
-                if(homework.teacherID != id)
+                var subject = await _apiHelper.ReturnSubjectByTeacherID(classID, id);
+                if(subject == null)
                 {
-                    error.Err = "Nie jestes nauczycielem klasy";
+                    error.Err = "Nieprawidlowe id klasy lub nie jestes nauczycielem przedmiotu";
                     error.Desc = "Nie mozesz dodac pliku do zadania";
                     return StatusCode(405, error);
                 }
-                var homeworkToReturn = await _apiHelper.UploadFileToHomework(file, classID, homework, id);
+                var homeworkToReturn = await _apiHelper.UploadFileToHomework(file, classID, id);
                 return Ok(homeworkToReturn);
             }
             else

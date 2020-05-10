@@ -10,5 +10,6 @@ namespace HomeSchoolAPI.DTOs
         public string name { get; set; }
         public string description { get; set; }
         public DateTime time { get; set; }
+        public List<string> filesID { get; set; }
     }
 }
