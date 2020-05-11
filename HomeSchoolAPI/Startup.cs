@@ -47,7 +47,7 @@ namespace HomeSchoolAPI
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HomeSchoolAPI");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HomeSchool API");
             });
 
             if (env.IsDevelopment())

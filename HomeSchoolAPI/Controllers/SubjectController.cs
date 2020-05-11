@@ -72,15 +72,8 @@ namespace HomeSchoolAPI.Controllers
             }
 
             var subject = await _apiHelper.AddSubjectToClass(user.Id, classObj, createSubjectDTO.subjectName);
-            await _apiHelper.ReplaceClassInfo(subject.classObj);
             
-
-            if(subject == null)
-            {
-                error.Err = "Już istnieje taki przedmiot";
-                error.Desc = "Zmień nazwę przedmiotu";
-                return StatusCode(405, error);
-            }
+            await _apiHelper.ReplaceClassInfo(subject.classObj);
 
             return Ok(subject);
         }

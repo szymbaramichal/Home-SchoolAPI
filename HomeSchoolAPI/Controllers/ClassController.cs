@@ -103,7 +103,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }         
             #endregion 
-            Class classe = new Class();
+            Class classObj = new Class();
             List<string> list1 = new List<string>();
             var id = _tokenHelper.GetIdByToken(token);
             var teacher = await _apiHelper.ReturnUserByID(id);
@@ -114,18 +114,18 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
             
-            classe = await _apiHelper.ReturnClassByID(addToClassDTO.ClassID);
+            classObj = await _apiHelper.ReturnClassByID(addToClassDTO.ClassID);
 
-            if(classe == null)
+            if(classObj == null)
             {
-                error.Err = "ROBIĘ ŹLE A CHCIAŁEM DOBRZE";
+                error.Err = "Niepoprawne ID klasy";
                 error.Desc = "Wprowadź poprawne ID klasy";
                 return StatusCode(409, error);
             }
 
             if(_apiHelper.DoesUserExistByEmail(addToClassDTO.UserToAddEmail))
             {
-                var classToReturn = await _apiHelper.AddMemberToClass(addToClassDTO.UserToAddEmail, classe);
+                var classToReturn = await _apiHelper.AddMemberToClass(addToClassDTO.UserToAddEmail, classObj);
                 if(classToReturn == null)
                 {
                     error.Err = "Ten uczeń już jest w tej klasie";

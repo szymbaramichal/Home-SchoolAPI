@@ -57,8 +57,8 @@ namespace HomeSchoolAPI.Controllers
                 email = userForRegister.Email,
                 userRole = userForRegister.UserRole,
                 classMember = list1,
-                name = "test",
-                surrname = "test",
+                name = " ",
+                surrname = " ",
                 pendingInvitations = list1
             };
 
@@ -95,8 +95,7 @@ namespace HomeSchoolAPI.Controllers
                 var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
 
                 classObj.membersAmount++;
-                var userr = await _apiHelper.ReturnUserByMail(userForRegister.Email);
-                classObj.members.Add(userr.Id);
+                classObj.members.Add(createdUser.Id);
                 await _apiHelper.ReplaceClassInfo(classObj);
             }
 
@@ -182,10 +181,9 @@ namespace HomeSchoolAPI.Controllers
             }
 
             var classes = new List<ClassToReturn>();
-            var userClasses = user.classMember.ToArray();
             for (int i = 0; i < user.classMember.Count; i++)
             {
-                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
+                var classObj = await _apiHelper.ReturnClassByID(user.classMember[i]);
                 classes.Add(await _apiHelper.ReturnClassToReturn(classObj, id));
             }
 
@@ -218,10 +216,9 @@ namespace HomeSchoolAPI.Controllers
         
 
             var classes = new List<ClassToReturn>();
-            var userClasses = user.classMember.ToArray();
             for (int i = 0; i < user.classMember.Count; i++)
             {
-                var classObj = await _apiHelper.ReturnClassByID(userClasses[i]);
+                var classObj = await _apiHelper.ReturnClassByID(user.classMember[i]);
                 classes.Add(await _apiHelper.ReturnClassToReturn(classObj, user.Id));
             }
 

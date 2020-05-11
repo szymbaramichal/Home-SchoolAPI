@@ -110,6 +110,7 @@ namespace HomeSchoolAPI.Controllers
                 mark = "",
                 description = responseToHomework.description,
                 sendTime = DateTime.Now,
+                files = responseToHomework.filesID
             };
             var homework = await _apiHelper.CreateResponse(response, responseToHomework.classID);
             if(homework == null)

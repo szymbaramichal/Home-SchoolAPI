@@ -32,7 +32,7 @@ namespace FileStorageAPI
             services.AddScoped<ITokenHelper, TokenHelper>();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("File Sending", new OpenApiInfo { Title = "FileSendingAPI", Version = "2116" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "FileSendingAPI", Version = "2116" });
             });
         }
 
@@ -47,7 +47,7 @@ namespace FileStorageAPI
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/File Sending/swagger.json", "FileSendingAPI");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "FileSendingAPI");
             });
 
             if (env.IsDevelopment())

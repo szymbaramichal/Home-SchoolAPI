@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace HomeSchoolAPI.DTOs
 {
@@ -8,5 +9,6 @@ namespace HomeSchoolAPI.DTOs
         public DateTime sendingTime { get; set; }
         public string homeworkID { get; set; }
         public string classID { get; set; }
+        public List<string> filesID { get; set; }
     }
 }

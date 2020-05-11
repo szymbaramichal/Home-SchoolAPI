@@ -16,6 +16,7 @@ namespace HomeSchoolAPI.Models
         public string senderSurname { get; set; }
         public string mark { get; set; }
         public string description { get; set; }
+        public List<string> files { get; set; }
         public DateTime sendTime { get; set; }
     }
 }
