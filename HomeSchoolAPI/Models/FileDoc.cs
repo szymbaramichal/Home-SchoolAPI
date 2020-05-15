@@ -11,5 +11,6 @@ namespace HomeSchoolAPI.Models
         public byte[] fileContent { get; set; } 
         public string senderID { get; set; }
         public string contentType { get; set; }
+        public string fileName { get; set; }
     }
 }

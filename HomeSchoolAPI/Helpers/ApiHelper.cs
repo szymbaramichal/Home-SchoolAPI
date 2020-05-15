@@ -255,7 +255,7 @@ namespace HomeSchoolAPI.Helpers
         #endregion
   
         #region HomeworkMethods
-        public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID)
+        public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID, List<string> linkHrefs)
         {
             _homeworks = database.GetCollection<Homework>(subject.classID+"_ho");
             _subjects = database.GetCollection<Subject>(subject.classID+"_su");
@@ -274,7 +274,8 @@ namespace HomeSchoolAPI.Helpers
                 teacherID = subject.teacherId,
                 files = filesID,
                 endDate = time,
-                responses = new List<string>()
+                responses = new List<string>(),
+                linkHrefs = linkHrefs
             };
             await _homeworks.InsertOneAsync(homework);
             await database.CreateCollectionAsync(homework.Id+"_re");
@@ -318,7 +319,8 @@ namespace HomeSchoolAPI.Helpers
                 responses = new List<Response>(),
                 createDate = homework.createDate,
                 endDate = homework.endDate,
-                files = homework.files.ToArray()
+                files = homework.files.ToArray(),
+                linkHrefs = homework.linkHrefs.ToArray()
             };
             
             List<Response> userResponses = new List<Response>();
@@ -367,7 +369,8 @@ namespace HomeSchoolAPI.Helpers
             {
                 fileContent = binaryContent,
                 senderID = senderID,
-                contentType = file.ContentType
+                contentType = file.ContentType,
+                fileName = file.FileName
             };
 
             await _files.InsertOneAsync(fileDoc);
@@ -379,12 +382,16 @@ namespace HomeSchoolAPI.Helpers
             var homework = await _homeworks.Find<Homework>(x => x.Id == homeworkID).FirstOrDefaultAsync();
             return homework;
         }       
-        public async Task<FileStreamResult> ReturnHomeworkFileBySenderID(string classID, string fileID)
+        public async Task<ReturnFile> ReturnHomeworkFileBySenderID(string classID, string fileID)
         {
             _files = database.GetCollection<FileDoc>(classID+"_files");
             var fileObj = await _files.Find<FileDoc>(x => x.Id == fileID).FirstOrDefaultAsync();
             var stream = new MemoryStream(fileObj.fileContent);
-            return new FileStreamResult(stream, fileObj.contentType);
+            ReturnFile returnFile = new ReturnFile();
+            returnFile.fileName = fileObj.fileName;
+            returnFile.contentType = fileObj.contentType;
+            returnFile.stream = stream;
+            return returnFile;
         }
         public async Task<string> UploadFileToResponse(IFormFile file, string homeworkID, string senderID)
         {
@@ -409,18 +416,23 @@ namespace HomeSchoolAPI.Helpers
             {
                 fileContent = binaryContent,
                 senderID = senderID,
-                contentType = file.ContentType
+                contentType = file.ContentType,
+                fileName = file.FileName
             };
 
             await _files.InsertOneAsync(fileDoc);
             return fileDoc.Id;
         }
-        public async Task<FileStreamResult> ReturnResponseFileBySenderID(string homeworkID, string fileID)
+        public async Task<ReturnFile> ReturnResponseFileBySenderID(string homeworkID, string fileID)
         {
             _files = database.GetCollection<FileDoc>(homeworkID+"_re_files");
             var fileObj = await _files.Find<FileDoc>(x => x.Id == fileID).FirstOrDefaultAsync();
             var stream = new MemoryStream(fileObj.fileContent);
-            return new FileStreamResult(stream, fileObj.contentType);
+            ReturnFile returnFile = new ReturnFile();
+            returnFile.fileName = fileObj.fileName;
+            returnFile.contentType = fileObj.contentType;
+            returnFile.stream = stream;
+            return returnFile;
         }
         #endregion
     }

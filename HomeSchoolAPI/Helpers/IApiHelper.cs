@@ -30,16 +30,16 @@ namespace HomeSchoolAPI.Helpers
         #endregion
         #region Homework
         Task<HomeworkToReturn> ReturnHomeworkToReturn(Homework homework, string classID, string userID);
-        Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID);
+        Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID, List<string> linkHrefs);
         Task<string> UploadFileToHomework(IFormFile file, string classID, string senderID);
         Task<Homework> ReturnHomeworkByIDs(string classID, string homeworkID);
-        Task<FileStreamResult> ReturnHomeworkFileBySenderID(string homeworkID, string fileID);
+        Task<ReturnFile> ReturnHomeworkFileBySenderID(string homeworkID, string fileID);
         #endregion
         #region Response
         Task<Homework> CreateResponse(Response response, string classID);
         Task<Response> PutMark(string homeworkID, string responseID, string mark);
         Task<string> UploadFileToResponse(IFormFile file, string homeworkID, string senderID);
-        Task<FileStreamResult> ReturnResponseFileBySenderID(string homeworkID, string fileID);
+        Task<ReturnFile> ReturnResponseFileBySenderID(string homeworkID, string fileID);
 
         #endregion
     }

@@ -18,5 +18,6 @@ namespace HomeSchoolAPI.Models
         public string description { get; set; }
         public List<string> files { get; set; }
         public DateTime sendTime { get; set; }
+        public List<string> linkHrefs { get; set; }
     }
 }

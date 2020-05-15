@@ -60,7 +60,7 @@ namespace HomeSchoolAPI.Controllers
 
             try
             {
-                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.name, homeworkToAdd.description, homeworkToAdd.time, homeworkToAdd.filesID);
+                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.name, homeworkToAdd.description, homeworkToAdd.time, homeworkToAdd.filesID, homeworkToAdd.linkHrefs);
                 if(homework == null)
                 {
                     error.Err = "Złe ID pliku";
@@ -71,7 +71,7 @@ namespace HomeSchoolAPI.Controllers
             }
             catch
             {
-                error.Err = "Nie jestes nauczycielem tej klasy";
+                error.Err = "Błędne dane";
                 error.Desc = "Nie mozesz dodac zadania";
                 return StatusCode(405, error);
             }
@@ -110,7 +110,8 @@ namespace HomeSchoolAPI.Controllers
                 mark = "",
                 description = responseToHomework.description,
                 sendTime = DateTime.Now,
-                files = responseToHomework.filesID
+                files = responseToHomework.filesID,
+                linkHrefs = responseToHomework.linkHrefs
             };
             var homework = await _apiHelper.CreateResponse(response, responseToHomework.classID);
             if(homework == null)

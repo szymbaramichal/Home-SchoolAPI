@@ -19,5 +19,6 @@ namespace HomeSchoolAPI.Models
         public List<string> files { get; set; }
         public DateTime createDate { get; set; }
         public DateTime endDate { get; set; }
+        public List<string> linkHrefs { get; set; }
     }
 }

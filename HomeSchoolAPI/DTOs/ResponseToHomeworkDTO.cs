@@ -10,5 +10,6 @@ namespace HomeSchoolAPI.DTOs
         public string homeworkID { get; set; }
         public string classID { get; set; }
         public List<string> filesID { get; set; }
+        public List<string> linkHrefs { get; set; }
     }
 }

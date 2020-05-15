@@ -14,5 +14,6 @@ namespace HomeSchoolAPI.APIRespond
         public DateTime createDate { get; set; }
         public DateTime endDate { get; set; }
         public string[] files { get; set; }
+        public string[] linkHrefs { get; set; }
     }
 }

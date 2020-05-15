@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using FileStorageAPI.ApiResponse;
 using FileStorageAPI.DTOs;
 using HomeSchoolAPI.APIRespond;
 using HomeSchoolAPI.Helpers;
@@ -32,40 +33,45 @@ namespace FileStorageAPI.Controllers
         public async Task<FileStreamResult> ReturnFilesFromHomework(ReturnForHomeworkDTO returnForHomework)
         {
             var file = await _apiHelper.ReturnHomeworkFileBySenderID(returnForHomework.classID, returnForHomework.fileID);
-            return file;
+            Response.Headers.Add("fileName", file.fileName);
+            Response.Headers.Remove("Access-Control-Expose-Headers");
+            Response.Headers.Add("Access-Control-Expose-Headers", "*");
+            return new FileStreamResult(file.stream, file.contentType);
         }
 
         [HttpPost("returnFileFromResponse")]
         public async Task<FileStreamResult> ReturnFilesFromResponse(ReturnForResponse returnForResponse)
         {
             var file = await _apiHelper.ReturnHomeworkFileBySenderID(returnForResponse.homeworkID, returnForResponse.fileID);
-            return file;
+            Response.Headers.Add("fileName", file.fileName);
+            Response.Headers.Remove("Access-Control-Expose-Headers");
+            Response.Headers.Add("Access-Control-Expose-Headers", "*");
+            return new FileStreamResult(file.stream, file.contentType);
         }
 
         [HttpPost("uploadToHomework/{classID}")]
         public async Task<IActionResult> UploadFileToHomework(string classID, IFormFile file)
         {
-            // #region TokenValidation
-            // try
-            // {
-            //     token = HttpContext.Request.Headers["Authorization"];
-            //     token = token.Replace("Bearer ", "");
-            //     if (!_tokenHelper.IsValidateToken(token))
-            //     {
-            //         error.Err = "Token wygasł";
-            //         error.Desc = "Zaloguj się od nowa";
-            //         return StatusCode(405, error);
-            //     }
-            // }
-            // catch
-            // {
-            //     error.Err = "Nieprawidlowy token";
-            //     error.Desc = "Wprowadz token jeszcze raz";
-            //     return StatusCode(405, error);
-            // }   
-            // var id = _tokenHelper.GetIdByToken(token);
-            // #endregion
-            var id = "5eb91b284f987a2520d4e3be";
+            #region TokenValidation
+            try
+            {
+                token = HttpContext.Request.Headers["Authorization"];
+                token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
+                {
+                    error.Err = "Token wygasł";
+                    error.Desc = "Zaloguj się od nowa";
+                    return StatusCode(405, error);
+                }
+            }
+            catch
+            {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
+                return StatusCode(405, error);
+            }   
+            var id = _tokenHelper.GetIdByToken(token);
+            #endregion
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))
             {
@@ -77,7 +83,9 @@ namespace FileStorageAPI.Controllers
                     return StatusCode(405, error);
                 }
                 var fileID = await _apiHelper.UploadFileToHomework(file, classID, id);
-                return Ok(fileID);
+                FileResponse fileResponse = new FileResponse();
+                fileResponse.fileID = fileID;
+                return Ok(fileResponse);
             }
             else
             {
@@ -90,27 +98,26 @@ namespace FileStorageAPI.Controllers
         [HttpPost("uploadToResponse/{classID}/{homeworkID}")]
         public async Task<IActionResult> UploadFileToResponse(string homeworkID, string classID,IFormFile file)
         {
-            // #region TokenValidation
-            // try
-            // {
-            //     token = HttpContext.Request.Headers["Authorization"];
-            //     token = token.Replace("Bearer ", "");
-            //     if (!_tokenHelper.IsValidateToken(token))
-            //     {
-            //         error.Err = "Token wygasł";
-            //         error.Desc = "Zaloguj się od nowa";
-            //         return StatusCode(405, error);
-            //     }
-            // }
-            // catch
-            // {
-            //     error.Err = "Nieprawidlowy token";
-            //     error.Desc = "Wprowadz token jeszcze raz";
-            //     return StatusCode(405, error);
-            // }   
-            // var id = _tokenHelper.GetIdByToken(token);
-            // #endregion
-            var id = "5eb91d3bbbc6d4163081751e";
+            #region TokenValidation
+            try
+            {
+                token = HttpContext.Request.Headers["Authorization"];
+                token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
+                {
+                    error.Err = "Token wygasł";
+                    error.Desc = "Zaloguj się od nowa";
+                    return StatusCode(405, error);
+                }
+            }
+            catch
+            {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
+                return StatusCode(405, error);
+            }   
+            var id = _tokenHelper.GetIdByToken(token);
+            #endregion
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))
             {
@@ -121,7 +128,9 @@ namespace FileStorageAPI.Controllers
                     error.Desc = "Nie mozesz dodac pliku do zadania";
                     return StatusCode(405, error);
                 }
-                return Ok(fileID);
+                FileResponse fileResponse = new FileResponse();
+                fileResponse.fileID = fileID;
+                return Ok(fileResponse);
             }
             else
             {
