@@ -105,14 +105,8 @@ namespace HomeSchoolAPI.Controllers
             #endregion 
             Class classObj = new Class();
             List<string> list1 = new List<string>();
+
             var id = _tokenHelper.GetIdByToken(token);
-            var teacher = await _apiHelper.ReturnUserByID(id);
-            if(teacher.userRole != 1)
-            {
-                error.Err = "Nie możesz dodać ucznia do klasy";
-                error.Desc = "Nie jesteś nauczycielem";
-                return StatusCode(405, error);
-            }
             
             classObj = await _apiHelper.ReturnClassByID(addToClassDTO.ClassID);
 
@@ -120,6 +114,13 @@ namespace HomeSchoolAPI.Controllers
             {
                 error.Err = "Niepoprawne ID klasy";
                 error.Desc = "Wprowadź poprawne ID klasy";
+                return StatusCode(409, error);
+            }
+
+            if(classObj.creatorID != id)
+            {
+                error.Err = "Nie jesteś wychowawcą klasy";
+                error.Desc = "Nie możesz dodać użytkownika";
                 return StatusCode(409, error);
             }
 
@@ -141,6 +142,106 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(409, error);
             }
         }
+
+        [HttpDelete("deleteMember")]
+        public async Task<IActionResult> DeleteMember(DeleteMemberDTO deleteMemberDTO)
+        {
+            #region TokenValidation
+            try
+            {
+                token = HttpContext.Request.Headers["Authorization"];
+                token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
+                {
+                    error.Err = "Token wygasł";
+                    error.Desc = "Zaloguj się od nowa";
+                    return StatusCode(405, error);
+                }
+            }
+            catch
+            {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
+                return StatusCode(405, error);
+            }         
+            #endregion 
+            var id = _tokenHelper.GetIdByToken(token);
+            var classObj = await _apiHelper.ReturnClassByID(deleteMemberDTO.classID);
+            if(classObj == null)
+            {
+                error.Err = "Niepoprawne ID klasy";
+                error.Desc = "Nie możesz usunąć członka klasy";
+                return StatusCode(409, error);
+            }
+            if(!classObj.members.Contains(deleteMemberDTO.userToDeleteID))
+            {
+                error.Err = "Użytkownik nie należy do klasy";
+                error.Desc = "Nie możesz usunąć członka klasy";
+                return StatusCode(409, error);
+            }
+            if(classObj.creatorID != id)
+            {
+                error.Err = "Nie jesteś wychowawcą klasy";
+                error.Desc = "Nie możesz usunąć członka klasy";
+                return StatusCode(409, error);
+            }
+            var userToDelete = await _apiHelper.ReturnUserByID(deleteMemberDTO.userToDeleteID);
+            var deleteMember = await _apiHelper.DeleteMemberFromClass(userToDelete, classObj);
+            return Ok(deleteMember);
+        }
+
+        [HttpDelete("deleteSubject")]
+        public async Task<IActionResult> DeleteSubject(DeleteSubjectDTO deleteSubject)
+        {
+            #region TokenValidation
+            try
+            {
+                token = HttpContext.Request.Headers["Authorization"];
+                token = token.Replace("Bearer ", "");
+                if (!_tokenHelper.IsValidateToken(token))
+                {
+                    error.Err = "Token wygasł";
+                    error.Desc = "Zaloguj się od nowa";
+                    return StatusCode(405, error);
+                }
+            }
+            catch
+            {
+                error.Err = "Nieprawidlowy token";
+                error.Desc = "Wprowadz token jeszcze raz";
+                return StatusCode(405, error);
+            }         
+            #endregion 
+            var id = _tokenHelper.GetIdByToken(token);
+            var classObj = await _apiHelper.ReturnClassByID(deleteSubject.classID);
+            if(classObj == null)
+            {
+                error.Err = "Zle ID klasy";
+                error.Desc = "Wprowadz ID klasy ponownie";
+                return StatusCode(409, error);
+            }
+            if(classObj.creatorID != id)
+            {
+                error.Err = "Nie jesteś wychowawcą klasy";
+                error.Desc = "Nie możesz usunąć przedmiotu";
+                return StatusCode(409, error);
+            }
+            var isDeleted = await _apiHelper.IsSubjectDeleted(deleteSubject.classID, deleteSubject.subjectID, id);
+            if(isDeleted)
+            {
+                error.Err = "Pomyślnie usunięto przedmiot";
+                error.Desc = "Udało się usunąć przedmiot";
+                return StatusCode(200, error);
+            }
+            else
+            {
+                error.Err = "Zle ID przedmiotu";
+                error.Desc = "Wprowadz poprawne ID przedmiotu";
+                return StatusCode(409, error);
+            }
+
+        }
+
 
     }
 }

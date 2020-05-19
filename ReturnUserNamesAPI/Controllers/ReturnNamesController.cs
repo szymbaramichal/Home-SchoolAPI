@@ -1,29 +1,29 @@
 using System;
 using System.Threading.Tasks;
 using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.DTOs;
 using HomeSchoolAPI.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using ReturnUserNamesAPI.DTOs;
 
-namespace HomeSchoolAPI.Controllers
+namespace ReturnUserNamesAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MarkController : ControllerBase
+    public class ReturnNamesController : ControllerBase
     {
         private IApiHelper _apiHelper;
         private ITokenHelper _tokenHelper;
         private String token;
         private Error error;
-        public MarkController(IApiHelper apiHelper, ITokenHelper tokenHelper)
+        public ReturnNamesController(IApiHelper apiHelper, ITokenHelper tokenHelper)
         {
             error = new Error();
             _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
         }
 
-        [HttpPut]
-        public async Task<IActionResult> PutMark([FromBody] PutMarkDTO putMark)
+        [HttpPost]
+        public async Task<IActionResult> ReturnNamesFromClass(ReturnNamesDTO returnNames)
         {
             #region TokenValidation
             try
@@ -42,33 +42,24 @@ namespace HomeSchoolAPI.Controllers
                 error.Err = "Nieprawidlowy token";
                 error.Desc = "Wprowadz token jeszcze raz";
                 return StatusCode(405, error);
-            }         
+            }
             #endregion
             var id = _tokenHelper.GetIdByToken(token);
-            
-            var subject = await _apiHelper.ReturnSubjectBySubjectID(putMark.classID, putMark.subjectID);
-            if(subject == null)
+            var classObj = await _apiHelper.ReturnClassByID(returnNames.classID);
+            if(classObj == null)
             {
-                error.Err = "Nie jesteś nauczycielem przedmiotu";
-                error.Desc = "Nie możesz ocenić zadania";
+                error.Err = "Złe ID klasy";
+                error.Desc = "Wprowadź poprawne ID klasy";
                 return StatusCode(405, error);
             }
-            if(!subject.homeworks.Contains(putMark.homeworkID))
+            if(!classObj.members.Contains(id))
             {
-                error.Err = "Niepoprawne ID zadania";
-                error.Desc = "Wprowadz zadanie ponownie";
+                error.Err = "Nie należysz do klasy";
+                error.Desc = "Nie możesz sprawdzić imion i nazwisk";
                 return StatusCode(405, error);
             }
-
-            var response = await _apiHelper.PutMark(putMark.homeworkID, putMark.responseID, putMark.mark);
-            if(response == null)
-            {
-                error.Err = "Niepoprawne ID odpowiedzi";
-                error.Desc = "Wprowadz ID odpowiedzi ponownie";
-                return StatusCode(405, error);
-            }
-            return Ok(response);
-
+            var names = await _apiHelper.ReturnNames(classObj);
+            return Ok(names);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace HomeSchoolAPI.Models
         public string senderID { get; set; }
         public string senderName { get; set; }
         public string senderSurname { get; set; }
+        public string homeworkName { get; set; }
         public string mark { get; set; }
         public string description { get; set; }
         public List<string> files { get; set; }

@@ -8,3 +8,8 @@ FileStorageAPI/obj
 FileStorageAPI/bin
 FileStorageAPI/appsettings.json
 HomeSchoolAPI/appsettings.json
+ReturnUserNamesAPI/appsettings.json
+ReturnUserNamesAPI/bin
+ReturnUserNamesAPI/obj
+ReturnUserNamesAPI/.vscode
+ReturnUserNamesAPI/.vs

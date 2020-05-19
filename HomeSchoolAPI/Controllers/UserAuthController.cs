@@ -57,8 +57,8 @@ namespace HomeSchoolAPI.Controllers
                 email = userForRegister.Email,
                 userRole = userForRegister.UserRole,
                 classMember = list1,
-                name = " ",
-                surrname = " ",
+                name = userForRegister.Name,
+                surrname = userForRegister.Surname,
                 pendingInvitations = list1
             };
 
@@ -253,5 +253,6 @@ namespace HomeSchoolAPI.Controllers
             });
 
         }
+
     }
 }

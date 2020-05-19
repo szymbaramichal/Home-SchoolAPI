@@ -17,10 +17,13 @@ namespace HomeSchoolAPI.Helpers
         Task<Class> AddMemberToClass(string email, Class classObj);
         Task<ClassToReturn> ReturnClassToReturn(Class classObj, string userID);
         Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName);
+        Task<Class> DeleteMemberFromClass(User user, Class classObj);
+        Task<List<string>> ReturnNames(Class classObj);
         #endregion
         #region Subject
-        Task<Subject> ReturnSubjectByTeacherID(string classID,string id);
         Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject, string userID);
+        Task<Subject> ReturnSubjectBySubjectID(string classID, string subjectID);
+        Task<bool> IsSubjectDeleted(string classID, string subjectID, string userID);
         #endregion
         #region User
         UserToReturn ReturnUserToReturn(User user);
@@ -31,14 +34,15 @@ namespace HomeSchoolAPI.Helpers
         #region Homework
         Task<HomeworkToReturn> ReturnHomeworkToReturn(Homework homework, string classID, string userID);
         Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID, List<string> linkHrefs);
-        Task<string> UploadFileToHomework(IFormFile file, string classID, string senderID);
+        Task<string> UploadFileToHomework(IFormFile file, string classID, string senderID, string subjectID);
         Task<Homework> ReturnHomeworkByIDs(string classID, string homeworkID);
         Task<ReturnFile> ReturnHomeworkFileBySenderID(string homeworkID, string fileID);
+        Task<bool> isHomeworkDeleted(string homeworkID, string subjectID, string classID);
         #endregion
         #region Response
-        Task<Homework> CreateResponse(Response response, string classID);
+        Task<ResponseReturn> CreateResponse(Response response, string classID, Homework homework);
         Task<Response> PutMark(string homeworkID, string responseID, string mark);
-        Task<string> UploadFileToResponse(IFormFile file, string homeworkID, string senderID);
+        Task<string> UploadFileToResponse(IFormFile file, string homeworkID, string senderID, string subjectID, string classID);
         Task<ReturnFile> ReturnResponseFileBySenderID(string homeworkID, string fileID);
 
         #endregion
