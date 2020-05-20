@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.DTOs;
-using HomeSchoolAPI.Helpers;
-using HomeSchoolAPI.Models;
+using HomeSchoolCore.APIRequest;
+using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Helpers;
+using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.DTOs;
-using HomeSchoolAPI.Helpers;
+using HomeSchoolCore.APIRequest;
+using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeSchoolAPI.Controllers

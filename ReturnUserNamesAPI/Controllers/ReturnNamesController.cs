@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.Helpers;
+using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using ReturnUserNamesAPI.DTOs;
 

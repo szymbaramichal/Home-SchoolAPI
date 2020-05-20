@@ -1,43 +1,35 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.Data;
-using HomeSchoolAPI.DTOs;
-using HomeSchoolAPI.Helpers;
-using HomeSchoolAPI.Models;
-using Microsoft.AspNetCore.Authorization;
+using HomeSchoolCore.APIRequest;
+using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Helpers;
+using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HomeSchoolAPI.Controllers
 {
-    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class UserAuthController : ControllerBase
     {
         
-        private readonly IConfiguration _configuration;
-        private readonly IAuthRepo _repo;
-        private readonly IApiHelper _apiHelper;
-        private readonly ITokenHelper _tokenHelper;
+        private IConfiguration _configuration;
+        private IApiHelper _apiHelper;
+        private ITokenHelper _tokenHelper;
         private Error error;
         private String token;
-        public UserAuthController(IAuthRepo repo, IConfiguration configuration, ITokenHelper tokenHelper, IApiHelper apiHelper)
+        public UserAuthController(IConfiguration configuration, ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
             _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
             error = new Error();
             _configuration = configuration;
-            _repo = repo;
         }
 
 
@@ -62,7 +54,7 @@ namespace HomeSchoolAPI.Controllers
                 pendingInvitations = list1
             };
 
-            var isUserExisting = await _repo.UserExists(userForRegister.Email);
+            var isUserExisting = await _apiHelper.UserExists(userForRegister.Email);
             
             if(isUserExisting)
             {
@@ -92,7 +84,7 @@ namespace HomeSchoolAPI.Controllers
                 userToCreate.classMember.Add(classObj.Id);
                 userToCreate.userCode = classObj.Id;
                 userForRegister.Email = userForRegister.Email.ToLower();
-                var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
+                var createdUser = await _apiHelper.RegisterUser(userToCreate, userForRegister.Password);
 
                 classObj.membersAmount++;
                 classObj.members.Add(createdUser.Id);
@@ -103,10 +95,10 @@ namespace HomeSchoolAPI.Controllers
             {
                 userToCreate.userCode = null;
                 userForRegister.Email = userForRegister.Email.ToLower();
-                var createdUser = await _repo.RegisterUser(userToCreate, userForRegister.Password);
+                var createdUser = await _apiHelper.RegisterUser(userToCreate, userForRegister.Password);
             }
 
-            var user = await _repo.LoginUser(userForRegister.Email.ToLower(), userForRegister.Password);
+            var user = await _apiHelper.LoginUser(userForRegister.Email.ToLower(), userForRegister.Password);
 
             var classes = new List<ClassToReturn>();
             var userClasses = user.classMember.ToArray();
@@ -205,7 +197,7 @@ namespace HomeSchoolAPI.Controllers
                 return Unauthorized(error);
             }
 
-            var user = await _repo.LoginUser(userForLogin.Email.ToLower(), userForLogin.Password);
+            var user = await _apiHelper.LoginUser(userForLogin.Email.ToLower(), userForLogin.Password);
 
             if(user == null) 
             {

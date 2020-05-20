@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeSchoolAPI", "HomeSchool
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorageAPI", "..\FileStorageAPI\FileStorageAPI.csproj", "{6FBED6CE-56B3-4A9C-BA2A-5BD14429F7F7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReturnUserNamesAPI", "..\ReturnUserNamesAPI\ReturnUserNamesAPI.csproj", "{41B9D46E-F587-472D-BA01-2CC0559E1A27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6FBED6CE-56B3-4A9C-BA2A-5BD14429F7F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FBED6CE-56B3-4A9C-BA2A-5BD14429F7F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FBED6CE-56B3-4A9C-BA2A-5BD14429F7F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41B9D46E-F587-472D-BA01-2CC0559E1A27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41B9D46E-F587-472D-BA01-2CC0559E1A27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41B9D46E-F587-472D-BA01-2CC0559E1A27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41B9D46E-F587-472D-BA01-2CC0559E1A27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

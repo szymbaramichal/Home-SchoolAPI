@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.DTOs;
-using HomeSchoolAPI.Helpers;
-using HomeSchoolAPI.Models;
-using Microsoft.AspNetCore.Authorization;
+using HomeSchoolCore.APIRequest;
+using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Helpers;
+using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HomeSchoolAPI.Controllers
 {
-    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class ClassController : ControllerBase

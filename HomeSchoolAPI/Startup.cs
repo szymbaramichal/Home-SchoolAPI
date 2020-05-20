@@ -1,13 +1,9 @@
-using System.Text;
-using HomeSchoolAPI.Data;
-using HomeSchoolAPI.Helpers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 namespace HomeSchoolAPI
 {
@@ -26,7 +22,6 @@ namespace HomeSchoolAPI
             services.AddControllers();
             services.AddScoped<IApiHelper, ApiHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
-            services.AddScoped<IAuthRepo, AuthRepo>();
             
             services.AddSwaggerGen(c =>
             {

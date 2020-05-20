@@ -9,7 +9,12 @@ FileStorageAPI/bin
 FileStorageAPI/appsettings.json
 HomeSchoolAPI/appsettings.json
 ReturnUserNamesAPI/appsettings.json
+HomeSchoolCore/appsettings.json
 ReturnUserNamesAPI/bin
 ReturnUserNamesAPI/obj
 ReturnUserNamesAPI/.vscode
 ReturnUserNamesAPI/.vs
+HomeSchoolCore/bin
+HomeSchoolCore/obj
+HomeSchoolCore/.vscode
+HomeSchoolCore/.vs

@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using FileStorageAPI.ApiResponse;
 using FileStorageAPI.DTOs;
-using HomeSchoolAPI.APIRespond;
-using HomeSchoolAPI.Helpers;
+using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.ApiResponse;
+using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace FileStorageAPI.Controllers
 {
