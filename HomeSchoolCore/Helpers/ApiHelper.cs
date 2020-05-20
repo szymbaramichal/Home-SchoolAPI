@@ -19,6 +19,8 @@ namespace HomeSchoolCore.Helpers
         private IMongoCollection<Homework> _homeworks;
         private IMongoCollection<Response> _responses;
         private IMongoCollection<FileDoc> _files;
+        private IMongoCollection<TextMessage> _messages;
+        private IMongoCollection<ChatInfo> _chatInfos;
         private IMongoDatabase database;
         private IConfiguration _configuration;
         public ApiHelper(IConfiguration configuration)
@@ -245,7 +247,7 @@ namespace HomeSchoolCore.Helpers
             for (int i = 0; i < classObj.members.Count; i++)
             {
                 var user = await ReturnUserByID(classObj.members[i]);
-                usersNames.Add(user.name + "" + user.surrname);
+                usersNames.Add(user.name + " " + user.surrname);
             }
             return usersNames;
         }
@@ -263,9 +265,18 @@ namespace HomeSchoolCore.Helpers
                 classID = classToEdit.Id,
                 homeworks = new List<string>()
             };
-
+            
             await _subjects.InsertOneAsync(subject);
-                    
+            await database.CreateCollectionAsync(subject.Id+"_chat");
+            await database.CreateCollectionAsync(subject.Id+"_chat_info");
+            _chatInfos = database.GetCollection<ChatInfo>(subject.Id+"_chat_info");
+            ChatInfo chatInfo = new ChatInfo
+            {
+                classID = classToEdit.Id,
+                subjectID = subject.Id,
+                messagesNumber = 0
+            };
+            await _chatInfos.InsertOneAsync(chatInfo);
             classToEdit.subjects.Add(subject.Id);
             
             var isTeacherAlreadyInClass = false;
@@ -369,8 +380,79 @@ namespace HomeSchoolCore.Helpers
             }
             return true;
         }
+        
         #endregion
-  
+        #region TextMessages
+        public async Task<TextMessage> SendMessage(string subjectID, TextMessage textMessage)
+        {
+            _messages = database.GetCollection<TextMessage>(subjectID+"_chat");
+            _chatInfos = database.GetCollection<ChatInfo>(subjectID+"_chat_info");
+
+            var chatInfo = await _chatInfos.Find<ChatInfo>(x => x.subjectID == subjectID).FirstOrDefaultAsync();
+
+            var filter = Builders<ChatInfo>.Filter.Eq(x => x.subjectID, subjectID);
+
+            chatInfo.messagesNumber++;
+            textMessage.messageID = chatInfo.messagesNumber;
+
+            await _chatInfos.ReplaceOneAsync(filter, chatInfo);
+
+            await _messages.InsertOneAsync(textMessage);
+            return textMessage;
+        }
+        public async Task<List<TextMessage>> ReturnLastMessages(string subjectID)
+        {
+            _messages = database.GetCollection<TextMessage>(subjectID+"_chat");
+            _chatInfos = database.GetCollection<ChatInfo>(subjectID+"_chat_info");
+            var chatInfo = await _chatInfos.Find<ChatInfo>(x => x.subjectID == subjectID).FirstOrDefaultAsync();
+            int lastMessageID = chatInfo.messagesNumber;
+            List<TextMessage> messages = new List<TextMessage>();
+            for (int i = 0; i < 10; i++)
+            {
+                var textMessage = await _messages.Find<TextMessage>(x => x.messageID == lastMessageID).FirstOrDefaultAsync();
+                if(textMessage == null) return messages;
+                messages.Add(textMessage);
+                lastMessageID--;
+            }
+            return messages;
+        }
+
+        public async Task<List<TextMessage>> ReturnNewerMessages(int lastMessageID, string subjectID)
+        {
+            _messages = database.GetCollection<TextMessage>(subjectID+"_chat");
+            _chatInfos = database.GetCollection<ChatInfo>(subjectID+"_chat_info");
+            var chatInfo = await _chatInfos.Find<ChatInfo>(x => x.subjectID == subjectID).FirstOrDefaultAsync();
+            var messagesNumer = chatInfo.messagesNumber;
+            var sum = messagesNumer - lastMessageID;
+            if(sum <= 0) return null;
+            lastMessageID++;
+            List<TextMessage> messages = new List<TextMessage>();
+            for (int i = 0; i < sum; i++)
+            {
+                var textMessage = await _messages.Find<TextMessage>(x => x.messageID == lastMessageID).FirstOrDefaultAsync();
+                if(textMessage == null) return messages;
+                messages.Add(textMessage);
+                lastMessageID++;
+            }
+            return messages;
+        }
+
+        public async Task<List<TextMessage>> ReturnOlderMessages(int lastMessageID, string subjectID)
+        {
+            _messages = database.GetCollection<TextMessage>(subjectID+"_chat");
+            _chatInfos = database.GetCollection<ChatInfo>(subjectID+"_chat_info");
+            lastMessageID--;
+            List<TextMessage> messages = new List<TextMessage>();
+            for (int i = 0; i < 10; i++)
+            {
+                var textMessage = await _messages.Find<TextMessage>(x => x.messageID == lastMessageID).FirstOrDefaultAsync();
+                if(textMessage == null) return messages;
+                messages.Add(textMessage);
+                lastMessageID--;
+            }
+            return messages;
+        }
+        #endregion
         #region HomeworkMethods
         public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID, List<string> linkHrefs)
         {
@@ -508,7 +590,14 @@ namespace HomeSchoolCore.Helpers
         }       
         public async Task<ReturnFile> ReturnHomeworkFileBySenderID(string classID, string fileID)
         {
-            _files = database.GetCollection<FileDoc>(classID+"_files");
+            try
+            {
+                _files = database.GetCollection<FileDoc>(classID+"_files");
+            }
+            catch (System.Exception)
+            {
+                return null;
+            }
             var fileObj = await _files.Find<FileDoc>(x => x.Id == fileID).FirstOrDefaultAsync();
             var stream = new MemoryStream(fileObj.fileContent);
             ReturnFile returnFile = new ReturnFile();
@@ -554,7 +643,14 @@ namespace HomeSchoolCore.Helpers
         }
         public async Task<ReturnFile> ReturnResponseFileBySenderID(string homeworkID, string fileID)
         {
-            _files = database.GetCollection<FileDoc>(homeworkID+"_re_files");
+            try
+            {
+                _files = database.GetCollection<FileDoc>(homeworkID+"_re_files");
+            }
+            catch
+            {
+                return null;
+            }
             var fileObj = await _files.Find<FileDoc>(x => x.Id == fileID).FirstOrDefaultAsync();
             var stream = new MemoryStream(fileObj.fileContent);
             ReturnFile returnFile = new ReturnFile();

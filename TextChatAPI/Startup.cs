@@ -1,12 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
-namespace FileStorageAPI
+namespace TextChatAPI
 {
     public class Startup
     {
@@ -14,7 +21,7 @@ namespace FileStorageAPI
         {
             Configuration = configuration;
         }
-        
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -25,7 +32,7 @@ namespace FileStorageAPI
             services.AddScoped<ITokenHelper, TokenHelper>();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "FileSendingAPI", Version = "2115" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TextChatAPI", Version = "2115" });
             });
         }
 

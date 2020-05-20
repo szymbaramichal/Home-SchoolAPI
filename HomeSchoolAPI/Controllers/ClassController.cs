@@ -141,8 +141,8 @@ namespace HomeSchoolAPI.Controllers
             }
         }
 
-        [HttpDelete("deleteMember")]
-        public async Task<IActionResult> DeleteMember(DeleteMemberDTO deleteMemberDTO)
+        [HttpPut("deleteMember")]
+        public async Task<IActionResult> DeleteMember([FromBody]DeleteMemberDTO deleteMemberDTO)
         {
             #region TokenValidation
             try
@@ -188,8 +188,8 @@ namespace HomeSchoolAPI.Controllers
             return Ok(deleteMember);
         }
 
-        [HttpDelete("deleteSubject")]
-        public async Task<IActionResult> DeleteSubject(DeleteSubjectDTO deleteSubject)
+        [HttpPut("deleteSubject")]
+        public async Task<IActionResult> DeleteSubject([FromBody]DeleteSubjectDTO deleteSubject)
         {
             #region TokenValidation
             try

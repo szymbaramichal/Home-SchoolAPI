@@ -131,8 +131,8 @@ namespace HomeSchoolAPI.Controllers
             }
             return Ok(responseReturn);
         }
-        [HttpDelete("deleteHomework")]
-        public async Task<IActionResult> DeleteHomework(DeleteHomeworkDTO deleteHomework)
+        [HttpPut("deleteHomework")]
+        public async Task<IActionResult> DeleteHomework([FromBody]DeleteHomeworkDTO deleteHomework)
         {
             #region TokenValidation
             try

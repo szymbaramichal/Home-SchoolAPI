@@ -50,14 +50,21 @@ namespace FileStorageAPI.Controllers
             #endregion
             var id = _tokenHelper.GetIdByToken(token);
             var subject = await _apiHelper.ReturnSubjectBySubjectID(returnForHomework.classID, returnForHomework.subjectID);
-            if(!subject.homeworks.Contains(returnForHomework.homeworkID) || subject.teacherId != id)
+            if(subject == null)
+            {
+                byte[] byteArray = Encoding.ASCII.GetBytes("");
+                MemoryStream stream = new MemoryStream(byteArray);
+                return new FileStreamResult(stream, "application/octet-stream");
+            }
+            if(!subject.homeworks.Contains(returnForHomework.homeworkID) && subject.teacherId != id)
             {
                 byte[] byteArray = Encoding.ASCII.GetBytes("");
                 MemoryStream stream = new MemoryStream(byteArray);
                 return new FileStreamResult(stream, "application/octet-stream");
             }
             var file = await _apiHelper.ReturnHomeworkFileBySenderID(returnForHomework.classID, returnForHomework.fileID);
-            Response.Headers.Add("fileName", file.fileName);
+            string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
+            Response.Headers.Add("fileName", asciiEquivalents);
             Response.Headers.Remove("Access-Control-Expose-Headers");
             Response.Headers.Add("Access-Control-Expose-Headers", "*");
             return new FileStreamResult(file.stream, file.contentType);
@@ -93,7 +100,8 @@ namespace FileStorageAPI.Controllers
                 MemoryStream stream = new MemoryStream(byteArray);
                 return new FileStreamResult(stream, "application/octet-stream");
             }
-            Response.Headers.Add("fileName", file.fileName);
+            string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
+            Response.Headers.Add("fileName", asciiEquivalents);
             Response.Headers.Remove("Access-Control-Expose-Headers");
             Response.Headers.Add("Access-Control-Expose-Headers", "*");
             return new FileStreamResult(file.stream, file.contentType);

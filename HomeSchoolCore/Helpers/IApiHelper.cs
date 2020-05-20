@@ -48,6 +48,12 @@ namespace HomeSchoolCore.Helpers
         Task<ReturnFile> ReturnResponseFileBySenderID(string homeworkID, string fileID);
 
         #endregion
+        #region TextMessages
+        Task<List<TextMessage>> ReturnLastMessages(string subjectID);
+        Task<TextMessage> SendMessage(string subjectID, TextMessage textMessage);
+        Task<List<TextMessage>> ReturnNewerMessages(int lastMessageID, string subjectID);
+        Task<List<TextMessage>> ReturnOlderMessages(int lastMessageID, string subjectID);
+        #endregion
     }
 
 }

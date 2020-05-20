@@ -59,7 +59,11 @@ namespace ReturnUserNamesAPI.Controllers
                 return StatusCode(405, error);
             }
             var names = await _apiHelper.ReturnNames(classObj);
-            return Ok(names);
+            UsersList users = new UsersList 
+            {
+                users = names
+            };
+            return Ok(users);
         }
     }
 }
