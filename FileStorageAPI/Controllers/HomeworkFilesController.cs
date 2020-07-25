@@ -56,7 +56,7 @@ namespace FileStorageAPI.Controllers
                 MemoryStream stream = new MemoryStream(byteArray);
                 return new FileStreamResult(stream, "application/octet-stream");
             }
-            if(!subject.homeworks.Contains(returnForHomework.homeworkID) && subject.teacherId != id)
+            if(!subject.homeworks.Contains(returnForHomework.homeworkID) && subject.teacherID != id)
             {
                 byte[] byteArray = Encoding.ASCII.GetBytes("");
                 MemoryStream stream = new MemoryStream(byteArray);
@@ -94,7 +94,24 @@ namespace FileStorageAPI.Controllers
             #endregion
             var id = _tokenHelper.GetIdByToken(token);
             var file = await _apiHelper.ReturnResponseFileBySenderID(returnForResponse.homeworkID, returnForResponse.fileID);
-            if(file.senderID != id)
+            var classObj = await _apiHelper.ReturnClassByID(returnForResponse.classID);
+            if(classObj.members.Contains(id))
+            {
+                var subject = await _apiHelper.ReturnSubjectBySubjectID(returnForResponse.classID, returnForResponse.subjectID);
+                if(subject == null)
+                {
+                    byte[] byteArray = Encoding.ASCII.GetBytes("");
+                    MemoryStream stream = new MemoryStream(byteArray);
+                    return new FileStreamResult(stream, "application/octet-stream");
+                }
+                if(subject.teacherID != id)
+                {
+                    byte[] byteArray = Encoding.ASCII.GetBytes("");
+                    MemoryStream stream = new MemoryStream(byteArray);
+                    return new FileStreamResult(stream, "application/octet-stream");
+                }
+            }
+            else
             {
                 byte[] byteArray = Encoding.ASCII.GetBytes("");
                 MemoryStream stream = new MemoryStream(byteArray);

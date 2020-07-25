@@ -11,7 +11,7 @@ namespace HomeSchoolCore.Models
         public string Id { get; set; }
         public string name { get; set; }
         public string classID { get; set; }
-        public string teacherId { get; set; }
+        public string teacherID { get; set; }
         public List<string> homeworks { get; set; }
     }
 }

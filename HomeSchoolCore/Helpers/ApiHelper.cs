@@ -128,7 +128,7 @@ namespace HomeSchoolCore.Helpers
                 {
                     var subjectObj = await _subjects.Find<Subject>(x => x.Id == classObj.subjects[i]).FirstOrDefaultAsync();
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
-                    if(subjectObj.teacherId == userID)
+                    if(subjectObj.teacherID == userID)
                     {
                         classToReturn.subjects.Add(subjectToReturn);
                     }
@@ -146,7 +146,7 @@ namespace HomeSchoolCore.Helpers
                 {
                     var subjectObj = await _subjects.Find<Subject>(x => x.Id == classObj.subjects[i]).FirstOrDefaultAsync();
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
-                    if(subjectObj.teacherId == userID)
+                    if(subjectObj.teacherID == userID)
                     {
                         classToReturn.subjects.Add(subjectToReturn);
                     }
@@ -261,7 +261,7 @@ namespace HomeSchoolCore.Helpers
             Subject subject = new Subject()
             {
                 name = subjectName,
-                teacherId = teacherID,
+                teacherID = teacherID,
                 classID = classToEdit.Id,
                 homeworks = new List<string>()
             };
@@ -327,7 +327,7 @@ namespace HomeSchoolCore.Helpers
                 Id = subject.Id,
                 name = subject.name,
                 classID = subject.classID,
-                teacherID = subject.teacherId,
+                teacherID = subject.teacherID,
                 homeworks = new List<HomeworkToReturn>()
             };
             
@@ -352,28 +352,35 @@ namespace HomeSchoolCore.Helpers
             }
             var classObj = await _classes.Find<Class>(x => x.Id == classID).FirstOrDefaultAsync();
             var subject = await _subjects.Find<Subject>(x => x.Id == subjectID).FirstOrDefaultAsync();
-                if(classObj.subjects.Contains(subjectID))
+
+            if(classObj.subjects.Contains(subjectID))
+            {
+                if(subject == null) return false;
+                for (int i = 0; i < subject.homeworks.Count; i++)
                 {
-                    if(subject == null) return false;
-                    for (int i = 0; i < subject.homeworks.Count; i++)
-                    {
-                        await database.DropCollectionAsync(subject.homeworks[i]+"_re");
-                        await database.DropCollectionAsync(subject.homeworks[i]+"_re_files");
-                    }
-                    _files = database.GetCollection<FileDoc>(classID+"_files");
-                    var files = await _files.Find<FileDoc>(x => x.subjectID == subjectID).ToListAsync();
-                    for (int i = 0; i < files.Count; i++)
-                    {
-                        await _files.DeleteOneAsync<FileDoc>(x => x.Id == files[i].Id);
-                    }
-                    _subjects.DeleteOne<Subject>(x => x.Id == subjectID);
+                    await database.DropCollectionAsync(subject.homeworks[i]+"_re");
+                    await database.DropCollectionAsync(subject.homeworks[i]+"_re_files");
                 }
-            var subjectObj = await _subjects.Find<Subject>(x => x.teacherId == subject.teacherId).FirstOrDefaultAsync();
-            if(subjectObj == null && classObj.creatorID != subject.teacherId)
+                _files = database.GetCollection<FileDoc>(classID+"_files");
+                var files = await _files.Find<FileDoc>(x => x.subjectID == subjectID).ToListAsync();
+
+                for (int i = 0; i < files.Count; i++)
+                {
+                    await _files.DeleteOneAsync<FileDoc>(x => x.Id == files[i].Id);
+                }
+
+                classObj.subjects.Remove(subjectID);
+                var filter = Builders<Class>.Filter.Eq(x => x.Id, classObj.Id);
+                await _classes.ReplaceOneAsync(filter, classObj);
+                _subjects.DeleteOne<Subject>(x => x.Id == subjectID);
+            }
+
+            var subjectObj = await _subjects.Find<Subject>(x => x.teacherID == subject.teacherID).FirstOrDefaultAsync();
+            if(subjectObj == null && classObj.creatorID != subject.teacherID)
             {
                 classObj.members.Remove(userID);
                 await ReplaceClassInfo(classObj);
-                var user = await _users.Find<User>(x => x.Id == subject.teacherId).FirstOrDefaultAsync();
+                var user = await _users.Find<User>(x => x.Id == subject.teacherID).FirstOrDefaultAsync();
                 user.classMember.Remove(classID);
                 var filter = Builders<User>.Filter.Eq(x => x.Id, user.Id);
                 await _users.ReplaceOneAsync(filter, user);
@@ -470,7 +477,7 @@ namespace HomeSchoolCore.Helpers
                 description = description,
                 subjectID = subject.Id,
                 createDate = DateTime.Now,
-                teacherID = subject.teacherId,
+                teacherID = subject.teacherID,
                 files = filesID,
                 endDate = time,
                 responses = new List<string>(),
@@ -537,7 +544,7 @@ namespace HomeSchoolCore.Helpers
                 if(response.senderID == userID) userResponses.Add(response);
                 homeworkToReturn.responses.Add(response);
             }
-            if(subject.teacherId == userID)
+            if(subject.teacherID == userID)
             {
                 return homeworkToReturn;
             }
@@ -668,6 +675,7 @@ namespace HomeSchoolCore.Helpers
             {
                 _homeworks = database.GetCollection<Homework>(classID+"_ho");
                 _files = database.GetCollection<FileDoc>(classID+"_files");
+                _subjects = database.GetCollection<Subject>(classID+"_su");
             }
             catch 
             {
@@ -678,6 +686,10 @@ namespace HomeSchoolCore.Helpers
             {
                 return false;
             }
+            var filter = Builders<Subject>.Filter.Eq(x => x.Id, subjectID);
+            var subject = await _subjects.Find<Subject>(x => x.Id == subjectID).FirstOrDefaultAsync();
+            subject.homeworks.Remove(homework.Id);
+            await _subjects.ReplaceOneAsync(filter, subject);
             for (int i = 0; i < homework.files.Count; i++)
             {
                 await _files.DeleteOneAsync(x => x.Id == homework.files[i]);

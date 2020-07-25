@@ -155,7 +155,7 @@ namespace HomeSchoolAPI.Controllers
             #endregion
             var id = _tokenHelper.GetIdByToken(token);
             var subject = await _apiHelper.ReturnSubjectBySubjectID(deleteHomework.classID, deleteHomework.subjectID);
-            if(subject.teacherId != id)
+            if(subject.teacherID != id)
             {
                 error.Err = "Nie jestes nauczycielem klasy";
                 error.Desc = "Nie możesz usunąć przedmiotu";
