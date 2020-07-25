@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FileStorageAPI.DTOs;
 using HomeSchoolCore.APIRespond;
 using HomeSchoolCore.ApiResponse;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ namespace FileStorageAPI.Controllers
         private IApiHelper _apiHelper;
         private ITokenHelper _tokenHelper;
         private Error error;
-        private String token;
         public HomeworkFilesController(IApiHelper apiHelper, ITokenHelper tokenHelper)
         {
             error = new Error();
@@ -27,27 +27,11 @@ namespace FileStorageAPI.Controllers
         }
 
         [HttpPost("returnFileFromHomework")]
-        public async Task<FileStreamResult> ReturnFileFromHomework(ReturnForHomeworkDTO returnForHomework)
+        [TokenAuthorization]
+        public async Task<ActionResult> ReturnFileFromHomework(ReturnForHomeworkDTO returnForHomework)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    byte[] byteArray = Encoding.ASCII.GetBytes("");
-                    MemoryStream stream = new MemoryStream(byteArray);
-                    return new FileStreamResult(stream, "application/octet-stream");
-                }
-            }
-            catch
-            {
-                byte[] byteArray = Encoding.ASCII.GetBytes("");
-                MemoryStream stream = new MemoryStream(byteArray);
-                return new FileStreamResult(stream, "application/octet-stream");
-            }   
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var subject = await _apiHelper.ReturnSubjectBySubjectID(returnForHomework.classID, returnForHomework.subjectID);
             if(subject == null)
@@ -71,27 +55,11 @@ namespace FileStorageAPI.Controllers
         }
 
         [HttpPost("returnFileFromResponse")]
-        public async Task<FileStreamResult> ReturnFileFromResponse(ReturnForResponse returnForResponse)
+        [TokenAuthorization]
+        public async Task<ActionResult> ReturnFileFromResponse(ReturnForResponse returnForResponse)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    byte[] byteArray = Encoding.ASCII.GetBytes("");
-                    MemoryStream stream = new MemoryStream(byteArray);
-                    return new FileStreamResult(stream, "application/octet-stream");
-                }
-            }
-            catch
-            {
-                byte[] byteArray = Encoding.ASCII.GetBytes("");
-                MemoryStream stream = new MemoryStream(byteArray);
-                return new FileStreamResult(stream, "application/octet-stream");
-            }   
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var file = await _apiHelper.ReturnResponseFileBySenderID(returnForResponse.homeworkID, returnForResponse.fileID);
             var classObj = await _apiHelper.ReturnClassByID(returnForResponse.classID);
@@ -125,28 +93,13 @@ namespace FileStorageAPI.Controllers
         }
 
         [HttpPost("uploadToHomework/{classID}/{subjectID}")]
+        [TokenAuthorization]
         public async Task<IActionResult> UploadFileToHomework(string classID, string subjectID, IFormFile file)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }   
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
-            #endregion
+
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))
             {
@@ -171,28 +124,11 @@ namespace FileStorageAPI.Controllers
         }
 
         [HttpPost("uploadToResponse/{classID}/{homeworkID}")]
+        [TokenAuthorization]
         public async Task<IActionResult> UploadFileToResponse(string homeworkID, string classID,IFormFile file)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }   
+            string token = HttpContext.Request.Headers["Authorization"];
             var id = _tokenHelper.GetIdByToken(token);
-            #endregion
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))
             {
