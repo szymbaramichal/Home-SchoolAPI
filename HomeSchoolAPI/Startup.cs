@@ -1,3 +1,4 @@
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +23,7 @@ namespace HomeSchoolAPI
             services.AddControllers();
             services.AddScoped<IApiHelper, ApiHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
+            services.AddScoped<TokenAuthorizationAttribute>();
             
             services.AddSwaggerGen(c =>
             {

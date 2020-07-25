@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,6 @@ namespace HomeSchoolAPI.Controllers
     {
         private ITokenHelper _tokenHelper;
         private IApiHelper _apiHelper;
-        private String token;
         private Error error;
         public HomeworkController(ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
@@ -25,27 +25,11 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpPost("createHomework")]
+        [TokenAuthorization]
         public async Task<IActionResult> AddHomeworkToSubject(HomeworkToAddDTO homeworkToAdd)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }         
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(homeworkToAdd.classID);
 
@@ -78,29 +62,14 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpPost("createResponse")]
+        [TokenAuthorization]
         public async Task<IActionResult> CreateResponse(ResponseToHomeworkDTO responseToHomework)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }   
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var user = await _apiHelper.ReturnUserByID(id);   
-            #endregion
+
             var homework = await _apiHelper.ReturnHomeworkByIDs(responseToHomework.classID, responseToHomework.homeworkID);
             if(homework == null)
             {
@@ -132,27 +101,11 @@ namespace HomeSchoolAPI.Controllers
             return Ok(responseReturn);
         }
         [HttpPut("deleteHomework")]
+        [TokenAuthorization]
         public async Task<IActionResult> DeleteHomework([FromBody]DeleteHomeworkDTO deleteHomework)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }   
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var subject = await _apiHelper.ReturnSubjectBySubjectID(deleteHomework.classID, deleteHomework.subjectID);
             if(subject.teacherID != id)

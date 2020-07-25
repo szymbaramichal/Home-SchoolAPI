@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using HomeSchoolCore.APIRespond;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
 namespace HomeSchoolCore.Helpers
@@ -22,11 +21,10 @@ namespace HomeSchoolCore.Helpers
         private IMongoCollection<TextMessage> _messages;
         private IMongoCollection<ChatInfo> _chatInfos;
         private IMongoDatabase database;
-        private IConfiguration _configuration;
-        public ApiHelper(IConfiguration configuration)
+        public ApiHelper()
         {
-            _configuration = configuration;
-            var client = new MongoClient(_configuration.GetSection("AppSettings:ConnectionString").Value);
+            AppSettingsHelper appSettingsHelper = new AppSettingsHelper();
+            var client = new MongoClient(appSettingsHelper.connectionString);
             database = client.GetDatabase("ELearningDB");
             _users = database.GetCollection<User>("Users");
         }
@@ -389,6 +387,7 @@ namespace HomeSchoolCore.Helpers
         }
         
         #endregion
+    
         #region TextMessages
         public async Task<TextMessage> SendMessage(string subjectID, TextMessage textMessage)
         {
@@ -460,6 +459,7 @@ namespace HomeSchoolCore.Helpers
             return messages;
         }
         #endregion
+    
         #region HomeworkMethods
         public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID, List<string> linkHrefs)
         {

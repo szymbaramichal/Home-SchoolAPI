@@ -1,7 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +12,6 @@ namespace HomeSchoolAPI.Controllers
     public class SubjectController : ControllerBase
     {
         private Error error;
-        private String token;
         private readonly ITokenHelper _tokenHelper;
         private readonly IApiHelper _apiHelper;
         public SubjectController(ITokenHelper tokenHelper, IApiHelper apiHelper)
@@ -23,27 +22,12 @@ namespace HomeSchoolAPI.Controllers
         }
  
         [HttpPost("create")]
+        [TokenAuthorization]
         public async Task<IActionResult> CreateSubject(CreateSubjectDTO createSubjectDTO)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }
-            #endregion
+
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
 
             var user = await _apiHelper.ReturnUserByMail(createSubjectDTO.userToAddEmail);

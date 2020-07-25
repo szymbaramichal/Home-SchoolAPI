@@ -2,22 +2,15 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HomeSchoolCore.Helpers
 {
     public class TokenHelper : ITokenHelper
     {
-        private readonly IConfiguration _configuration;
-        private JwtSecurityTokenHandler handler;
-        public TokenHelper(IConfiguration configuration)
-        {
-            _configuration = configuration;
-            handler = new JwtSecurityTokenHandler();
-        }
         public bool IsValidateToken(string token)
         {
+            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
             SecurityToken validatedToken;
             var validation = handler.ValidateToken(token, GetParametersToValidate(), out validatedToken);
@@ -33,16 +26,18 @@ namespace HomeSchoolCore.Helpers
 
         public string GetIdByToken(string token) 
         {
+            JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
             var id = jsonToken.Claims.First(claim => claim.Type == "nameid").Value;
             return id;
         }
         private TokenValidationParameters GetParametersToValidate()
         {
+            AppSettingsHelper appSettingsHelper = new AppSettingsHelper();
                 return new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings:Token").Value)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(appSettingsHelper.tokenKey)),
                     ValidateIssuer = false,
                     ValidateAudience = false
                 };

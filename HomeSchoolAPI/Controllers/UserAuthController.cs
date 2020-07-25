@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,6 @@ namespace HomeSchoolAPI.Controllers
         private IApiHelper _apiHelper;
         private ITokenHelper _tokenHelper;
         private Error error;
-        private String token;
         public UserAuthController(IConfiguration configuration, ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
             _apiHelper = apiHelper;
@@ -139,28 +139,10 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpGet("loginviatoken")]
+        [TokenAuthorization]
         public async Task<IActionResult> LoginViaToken()
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }
-
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
 
             var id = _tokenHelper.GetIdByToken(token);
             var user = await _apiHelper.ReturnUserByID(id);
@@ -209,8 +191,7 @@ namespace HomeSchoolAPI.Controllers
 
             var classes = new List<ClassToReturn>();
             for (int i = 0; i < user.classMember.Count; i++)
-            {
-                var classObj = await _apiHelper.ReturnClassByID(user.classMember[i]);
+            {                var classObj = await _apiHelper.ReturnClassByID(user.classMember[i]);
                 classes.Add(await _apiHelper.ReturnClassToReturn(classObj, user.Id));
             }
 

@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReturnUserNamesAPI", "..\Re
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TextChatAPI", "..\TextChatAPI\TextChatAPI.csproj", "{58594F81-1FAD-4F40-8510-8D479D765512}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeSchoolCore", "..\HomeSchoolCore\HomeSchoolCore.csproj", "{52B2CEEE-377A-4DCE-9716-E7EADE0BDCA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{58594F81-1FAD-4F40-8510-8D479D765512}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58594F81-1FAD-4F40-8510-8D479D765512}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58594F81-1FAD-4F40-8510-8D479D765512}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52B2CEEE-377A-4DCE-9716-E7EADE0BDCA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52B2CEEE-377A-4DCE-9716-E7EADE0BDCA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52B2CEEE-377A-4DCE-9716-E7EADE0BDCA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52B2CEEE-377A-4DCE-9716-E7EADE0BDCA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

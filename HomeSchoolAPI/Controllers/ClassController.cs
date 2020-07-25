@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +16,6 @@ namespace HomeSchoolAPI.Controllers
     {
         private ITokenHelper _tokenHelper;
         private IApiHelper _apiHelper;
-        private String token;
         private Error error;
         public ClassController(ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
@@ -25,27 +25,10 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpPost("create")]
+        [TokenAuthorization]
         public async Task<IActionResult> CreateClass(ClassToCreateDTO classToCreate)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }         
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
 
             if(String.IsNullOrWhiteSpace(classToCreate.className) || String.IsNullOrWhiteSpace(classToCreate.schoolName))
             {
@@ -80,27 +63,11 @@ namespace HomeSchoolAPI.Controllers
         }
     
         [HttpPut("addMember")]
+        [TokenAuthorization]
         public async Task<IActionResult> AddMemberToClass([FromBody]AddToClassDTO addToClassDTO)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }         
-            #endregion 
+            string token = HttpContext.Request.Headers["Authorization"];
+
             Class classObj = new Class();
             List<string> list1 = new List<string>();
 
@@ -142,27 +109,11 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpPut("deleteMember")]
+        [TokenAuthorization]
         public async Task<IActionResult> DeleteMember([FromBody]DeleteMemberDTO deleteMemberDTO)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }         
-            #endregion 
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(deleteMemberDTO.classID);
             if(classObj == null)
@@ -189,27 +140,11 @@ namespace HomeSchoolAPI.Controllers
         }
 
         [HttpPut("deleteSubject")]
+        [TokenAuthorization]
         public async Task<IActionResult> DeleteSubject([FromBody]DeleteSubjectDTO deleteSubject)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }         
-            #endregion 
+            string token = HttpContext.Request.Headers["Authorization"];
+
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(deleteSubject.classID);
             if(classObj == null)
