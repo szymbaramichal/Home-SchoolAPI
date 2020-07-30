@@ -48,7 +48,7 @@ namespace ReturnUserNamesAPI.Controllers
             var names = await _apiHelper.ReturnNames(classObj);
             UsersList users = new UsersList 
             {
-                users = names
+                Users = names
             };
             return Ok(users);
         }

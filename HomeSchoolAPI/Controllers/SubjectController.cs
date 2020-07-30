@@ -61,7 +61,7 @@ namespace HomeSchoolAPI.Controllers
 
             var subject = await _apiHelper.AddSubjectToClass(user.Id, classObj, createSubjectDTO.SubjectName);
             
-            await _apiHelper.ReplaceClassInfo(subject.classObj);
+            await _apiHelper.ReplaceClassInfo(subject.ClassObj);
 
             return Ok(subject);
         }

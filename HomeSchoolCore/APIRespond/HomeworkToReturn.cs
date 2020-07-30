@@ -7,13 +7,13 @@ namespace HomeSchoolCore.APIRespond
     public class HomeworkToReturn
     {
         public string Id { get; set; }
-        public string name { get; set; }
-        public string description { get; set; }
-        public string subjectID { get; set; }
-        public List<Response> responses { get; set; }
-        public DateTime createDate { get; set; }
-        public DateTime endDate { get; set; }
-        public string[] files { get; set; }
-        public string[] linkHrefs { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string SubjectID { get; set; }
+        public List<Response> Responses { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string[] Files { get; set; }
+        public string[] LinkHrefs { get; set; }
     }
 }

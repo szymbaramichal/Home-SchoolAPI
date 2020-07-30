@@ -5,6 +5,6 @@ namespace HomeSchoolCore.APIRespond
 {
     public class TextMessagesToReturn
     {
-        public List<TextMessage> messages { get; set; }
+        public List<TextMessage> Messages { get; set; }
     }
 }

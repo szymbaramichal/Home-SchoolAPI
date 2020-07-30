@@ -52,14 +52,14 @@ namespace FileStorageAPI.Controllers
             }
 
             var file = await _apiHelper.ReturnHomeworkFileBySenderID(returnForHomework.ClassID, returnForHomework.FileID);
-            string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
+            string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.FileName));
 
             Response.Headers.Add("fileName", asciiEquivalents);
             
             Response.Headers.Remove("Access-Control-Expose-Headers");
             Response.Headers.Add("Access-Control-Expose-Headers", "*");
 
-            return new FileStreamResult(file.stream, file.contentType);
+            return new FileStreamResult(file.Stream, file.ContentType);
         }
 
         /// <summary>
@@ -97,11 +97,11 @@ namespace FileStorageAPI.Controllers
                 error.Desc = "Nie mozesz pobrac pliku";
                 return NotFound(error);
             }
-            string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
+            string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.FileName));
             Response.Headers.Add("fileName", asciiEquivalents);
             Response.Headers.Remove("Access-Control-Expose-Headers");
             Response.Headers.Add("Access-Control-Expose-Headers", "*");
-            return new FileStreamResult(file.stream, file.contentType);
+            return new FileStreamResult(file.Stream, file.ContentType);
         }
 
 
@@ -129,7 +129,7 @@ namespace FileStorageAPI.Controllers
                 }
                 var fileID = await _apiHelper.UploadFileToHomework(file, classID, id, subjectID);
                 FileResponse fileResponse = new FileResponse();
-                fileResponse.fileID = fileID;
+                fileResponse.FileID = fileID;
                 return Ok(fileResponse);
             }
             else
@@ -162,7 +162,7 @@ namespace FileStorageAPI.Controllers
                     return StatusCode(405, error);
                 }
                 FileResponse fileResponse = new FileResponse();
-                fileResponse.fileID = fileID;
+                fileResponse.FileID = fileID;
                 return Ok(fileResponse);
             }
             else

@@ -2,6 +2,6 @@ namespace HomeSchoolCore.ApiResponse
 {
     public class FileResponse
     {
-        public string fileID { get; set; }
+        public string FileID { get; set; }
     }
 }

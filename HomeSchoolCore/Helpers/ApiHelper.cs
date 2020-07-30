@@ -81,11 +81,11 @@ namespace HomeSchoolCore.Helpers
         {
             UserToReturn userToReturn = new UserToReturn();
             userToReturn.Id = user.Id;
-            userToReturn.email = user.email;
-            userToReturn.name = user.name;
-            userToReturn.surrname = user.surrname;
-            userToReturn.userRole = user.userRole;
-            userToReturn.userCode = user.userCode;
+            userToReturn.Email = user.email;
+            userToReturn.Name = user.name;
+            userToReturn.Surrname = user.surrname;
+            userToReturn.UserRole = user.userRole;
+            userToReturn.UserCode = user.userCode;
             return userToReturn;
         }
         public async Task<User> ReturnUserByID(string id)
@@ -112,14 +112,14 @@ namespace HomeSchoolCore.Helpers
             List<SubjectToReturn> subjects = new List<SubjectToReturn>();
             List<SubjectToReturn> subjectsForStudent = new List<SubjectToReturn>();
             classToReturn.Id = classObj.Id;
-            classToReturn.creatorID = classObj.creatorID;
-            classToReturn.className = classObj.className;
-            classToReturn.schoolName = classObj.schoolName;
-            classToReturn.membersAmount = classObj.membersAmount;
-            classToReturn.members = classObj.members;
-            classToReturn.subjects = subjects;
+            classToReturn.CreatorID = classObj.creatorID;
+            classToReturn.ClassName = classObj.className;
+            classToReturn.SchoolName = classObj.schoolName;
+            classToReturn.MembersAmount = classObj.membersAmount;
+            classToReturn.Members = classObj.members;
+            classToReturn.Subjects = subjects;
 
-            if(classToReturn.creatorID == userID)
+            if(classToReturn.CreatorID == userID)
             {
                 for (int i = 0; i < classObj.subjects.Count; i++)
                 {
@@ -127,12 +127,12 @@ namespace HomeSchoolCore.Helpers
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
                     if(subjectObj.teacherID == userID)
                     {
-                        classToReturn.subjects.Add(subjectToReturn);
+                        classToReturn.Subjects.Add(subjectToReturn);
                     }
                     else
                     {
-                        subjectToReturn.homeworks = new List<HomeworkToReturn>();
-                        classToReturn.subjects.Add(subjectToReturn);
+                        subjectToReturn.Homeworks = new List<HomeworkToReturn>();
+                        classToReturn.Subjects.Add(subjectToReturn);
                     }
                 }
                 return classToReturn;
@@ -145,7 +145,7 @@ namespace HomeSchoolCore.Helpers
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
                     if(subjectObj.teacherID == userID)
                     {
-                        classToReturn.subjects.Add(subjectToReturn);
+                        classToReturn.Subjects.Add(subjectToReturn);
                     }
                     else
                     {
@@ -153,9 +153,9 @@ namespace HomeSchoolCore.Helpers
                     }
                 }
 
-                if(classToReturn.subjects.Count == 0)
+                if(classToReturn.Subjects.Count == 0)
                 {
-                    classToReturn.subjects = subjectsForStudent;
+                    classToReturn.Subjects = subjectsForStudent;
                 }
                 return classToReturn;
             }
@@ -299,8 +299,8 @@ namespace HomeSchoolCore.Helpers
             }
         
             SubjectReturn subjectReturn = new SubjectReturn();
-            subjectReturn.classObj = classToEdit;
-            subjectReturn.subject = subject;
+            subjectReturn.ClassObj = classToEdit;
+            subjectReturn.Subject = subject;
             return subjectReturn; 
 
         }
@@ -322,17 +322,17 @@ namespace HomeSchoolCore.Helpers
             _homeworks = database.GetCollection<Homework>(subject.classID+"_ho");
             SubjectToReturn subjectToReturn = new SubjectToReturn {
                 Id = subject.Id,
-                name = subject.name,
-                classID = subject.classID,
-                teacherID = subject.teacherID,
-                homeworks = new List<HomeworkToReturn>()
+                Name = subject.name,
+                ClassID = subject.classID,
+                TeacherID = subject.teacherID,
+                Homeworks = new List<HomeworkToReturn>()
             };
             
             for (int i = 0; i < subject.homeworks.Count; i++)
             {
                 var homeworkObj = await _homeworks.Find<Homework>(x => x.Id == subject.homeworks[i]).FirstOrDefaultAsync();
                 var homeworkToReturn = await ReturnHomeworkToReturn(homeworkObj, subject.classID, userID);
-                subjectToReturn.homeworks.Add(homeworkToReturn);
+                subjectToReturn.Homeworks.Add(homeworkToReturn);
             }
             return subjectToReturn;
         }
@@ -513,9 +513,9 @@ namespace HomeSchoolCore.Helpers
             await _homeworks.ReplaceOneAsync(filter, homework);
             ResponseReturn responseReturn = new ResponseReturn
             {
-                homeworkObj = homework,
-                responseObj = response,
-                homeworkName = homework.name
+                HomeworkObj = homework,
+                ResponseObj = response,
+                HomeworkName = homework.name
             };
             return responseReturn; 
         }
@@ -523,14 +523,14 @@ namespace HomeSchoolCore.Helpers
         {
             HomeworkToReturn homeworkToReturn = new HomeworkToReturn {
                 Id = homework.Id,
-                name = homework.name,
-                description = homework.description,
-                subjectID = homework.subjectID,
-                responses = new List<Response>(),
-                createDate = homework.createDate,
-                endDate = homework.endDate,
-                files = homework.files.ToArray(),
-                linkHrefs = homework.linkHrefs.ToArray()
+                Name = homework.name,
+                Description = homework.description,
+                SubjectID = homework.subjectID,
+                Responses = new List<Response>(),
+                CreateDate = homework.createDate,
+                EndDate = homework.endDate,
+                Files = homework.files.ToArray(),
+                LinkHrefs = homework.linkHrefs.ToArray()
             };
             
             List<Response> userResponses = new List<Response>();
@@ -541,7 +541,7 @@ namespace HomeSchoolCore.Helpers
             {
                 var response = await _responses.Find<Response>(x => x.Id == homework.responses[i]).FirstOrDefaultAsync();
                 if(response.senderID == userID) userResponses.Add(response);
-                homeworkToReturn.responses.Add(response);
+                homeworkToReturn.Responses.Add(response);
             }
             if(subject.teacherID == userID)
             {
@@ -549,7 +549,7 @@ namespace HomeSchoolCore.Helpers
             }
             else
             {
-                homeworkToReturn.responses = userResponses;
+                homeworkToReturn.Responses = userResponses;
                 return homeworkToReturn;            
             }
         }
@@ -607,12 +607,12 @@ namespace HomeSchoolCore.Helpers
             var fileObj = await _files.Find<FileDoc>(x => x.Id == fileID).FirstOrDefaultAsync();
             var stream = new MemoryStream(fileObj.fileContent);
             ReturnFile returnFile = new ReturnFile();
-            returnFile.fileName = fileObj.fileName;
-            returnFile.contentType = fileObj.contentType;
-            returnFile.stream = stream;
-            returnFile.senderID = fileObj.senderID;
-            returnFile.subjectID = fileObj.subjectID;
-            returnFile.classID = fileObj.classID;
+            returnFile.FileName = fileObj.fileName;
+            returnFile.ContentType = fileObj.contentType;
+            returnFile.Stream = stream;
+            returnFile.SenderID = fileObj.senderID;
+            returnFile.SubjectID = fileObj.subjectID;
+            returnFile.ClassID = fileObj.classID;
             return returnFile;
         }
         public async Task<string> UploadFileToResponse(IFormFile file, string homeworkID, string senderID, string subjectID, string classID)
@@ -660,12 +660,12 @@ namespace HomeSchoolCore.Helpers
             var fileObj = await _files.Find<FileDoc>(x => x.Id == fileID).FirstOrDefaultAsync();
             var stream = new MemoryStream(fileObj.fileContent);
             ReturnFile returnFile = new ReturnFile();
-            returnFile.fileName = fileObj.fileName;
-            returnFile.contentType = fileObj.contentType;
-            returnFile.stream = stream;
-            returnFile.senderID = fileObj.senderID;
-            returnFile.subjectID = fileObj.subjectID;
-            returnFile.classID = fileObj.classID;
+            returnFile.FileName = fileObj.fileName;
+            returnFile.ContentType = fileObj.contentType;
+            returnFile.Stream = stream;
+            returnFile.SenderID = fileObj.senderID;
+            returnFile.SubjectID = fileObj.subjectID;
+            returnFile.ClassID = fileObj.classID;
             return returnFile;
         }
         public async Task<bool> isHomeworkDeleted(string homeworkID, string subjectID, string classID)

@@ -4,6 +4,6 @@ namespace HomeSchoolCore.APIRespond
 {
     public class UsersList
     {
-        public List<string> users { get; set; }
+        public List<string> Users { get; set; }
     }
 }

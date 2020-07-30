@@ -102,7 +102,7 @@ namespace TextChatAPI.Controllers
             var messages = await _apiHelper.ReturnLastMessages(subjectID);
             TextMessagesToReturn textMessages = new TextMessagesToReturn
             {
-                messages = messages
+                Messages = messages
             };
             return Ok(textMessages);
         }
@@ -152,7 +152,7 @@ namespace TextChatAPI.Controllers
             var messages = await _apiHelper.ReturnNewerMessages(messageNumber, subjectID);
             TextMessagesToReturn textMessages = new TextMessagesToReturn
             {
-                messages = messages
+                Messages = messages
             };
             return Ok(textMessages);
         }
@@ -203,7 +203,7 @@ namespace TextChatAPI.Controllers
 
             TextMessagesToReturn textMessages = new TextMessagesToReturn
             {
-                messages = messages
+                Messages = messages
             };
             return Ok(textMessages);
         }
