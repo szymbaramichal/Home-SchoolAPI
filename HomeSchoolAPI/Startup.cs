@@ -30,7 +30,7 @@ namespace HomeSchoolAPI
             
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HomeSchool API", Version = "2115" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HomeSchoolAPI", Version = "2115" });
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);

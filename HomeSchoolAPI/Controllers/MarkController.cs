@@ -29,6 +29,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> PutMark([FromBody] PutMarkDTO putMark)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             

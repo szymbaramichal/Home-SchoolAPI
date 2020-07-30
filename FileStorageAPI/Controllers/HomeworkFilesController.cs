@@ -34,6 +34,7 @@ namespace FileStorageAPI.Controllers
         public async Task<ActionResult> ReturnFileFromHomework(ReturnFileForHomeworkDTO returnForHomework)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var subject = await _apiHelper.ReturnSubjectBySubjectID(returnForHomework.ClassID, returnForHomework.SubjectID);
@@ -69,6 +70,7 @@ namespace FileStorageAPI.Controllers
         public async Task<ActionResult> ReturnFileFromResponse(ReturnFileForResponseDTO returnForResponse)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var file = await _apiHelper.ReturnResponseFileBySenderID(returnForResponse.HomeworkID, returnForResponse.FileID);
@@ -111,6 +113,7 @@ namespace FileStorageAPI.Controllers
         public async Task<IActionResult> UploadFileToHomework(string classID, string subjectID, IFormFile file)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
 
@@ -145,6 +148,8 @@ namespace FileStorageAPI.Controllers
         public async Task<IActionResult> UploadFileToResponse(string homeworkID, string classID,IFormFile file)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
+            
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))

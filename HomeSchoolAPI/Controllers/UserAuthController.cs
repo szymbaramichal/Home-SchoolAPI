@@ -144,6 +144,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> LoginViaToken()
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var user = await _apiHelper.ReturnUserByID(id);

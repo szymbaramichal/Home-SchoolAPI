@@ -30,6 +30,7 @@ namespace HomeSchoolAPI.Controllers
         {
 
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
 
@@ -73,6 +74,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> DeleteSubject([FromBody]DeleteSubjectDTO deleteSubject)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(deleteSubject.ClassID);

@@ -73,6 +73,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> CreateResponse(ResponseToHomeworkDTO responseToHomework)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var user = await _apiHelper.ReturnUserByID(id);   
@@ -116,6 +117,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> DeleteHomework([FromBody]DeleteHomeworkDTO deleteHomework)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var subject = await _apiHelper.ReturnSubjectBySubjectID(deleteHomework.ClassID, deleteHomework.SubjectID);

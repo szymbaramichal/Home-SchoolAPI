@@ -32,6 +32,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> CreateClass(ClassToCreateDTO classToCreate)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             if(String.IsNullOrWhiteSpace(classToCreate.ClassName) || String.IsNullOrWhiteSpace(classToCreate.SchoolName))
             {
@@ -73,6 +74,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> AddMemberToClass([FromBody]AddToClassDTO addToClassDTO)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             Class classObj = new Class();
             List<string> list1 = new List<string>();
@@ -124,6 +126,7 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> DeleteMember([FromBody]DeleteMemberDTO deleteMemberDTO)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(deleteMemberDTO.ClassID);
