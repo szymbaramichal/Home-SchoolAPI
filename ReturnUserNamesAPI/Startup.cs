@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Reflection;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,9 +27,13 @@ namespace ReturnUserNamesAPI
             services.AddControllers();
             services.AddScoped<IApiHelper, ApiHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
+            services.AddScoped<TokenAuthorizationAttribute>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API2115", Version = "v21115" });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
         }
 

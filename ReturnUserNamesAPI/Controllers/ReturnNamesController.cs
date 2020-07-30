@@ -1,9 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Mvc;
-using ReturnUserNamesAPI.DTOs;
 
 namespace ReturnUserNamesAPI.Controllers
 {
@@ -13,7 +14,6 @@ namespace ReturnUserNamesAPI.Controllers
     {
         private IApiHelper _apiHelper;
         private ITokenHelper _tokenHelper;
-        private String token;
         private Error error;
         public ReturnNamesController(IApiHelper apiHelper, ITokenHelper tokenHelper)
         {
@@ -21,31 +21,18 @@ namespace ReturnUserNamesAPI.Controllers
             _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
         }
-
+        /// <summary>
+        /// Return user names from class
+        /// </summary>
         [HttpPost]
-        public async Task<IActionResult> ReturnNamesFromClass(ReturnNamesDTO returnNames)
+        [TokenAuthorization]
+        public async Task<IActionResult> ReturnNamesFromClass(ReturnNamesForClassDTO returnNames)
         {
-            #region TokenValidation
-            try
-            {
-                token = HttpContext.Request.Headers["Authorization"];
-                token = token.Replace("Bearer ", "");
-                if (!_tokenHelper.IsValidateToken(token))
-                {
-                    error.Err = "Token wygasł";
-                    error.Desc = "Zaloguj się od nowa";
-                    return StatusCode(405, error);
-                }
-            }
-            catch
-            {
-                error.Err = "Nieprawidlowy token";
-                error.Desc = "Wprowadz token jeszcze raz";
-                return StatusCode(405, error);
-            }
-            #endregion
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
+
             var id = _tokenHelper.GetIdByToken(token);
-            var classObj = await _apiHelper.ReturnClassByID(returnNames.classID);
+            var classObj = await _apiHelper.ReturnClassByID(returnNames.ClassID);
             if(classObj == null)
             {
                 error.Err = "Złe ID klasy";

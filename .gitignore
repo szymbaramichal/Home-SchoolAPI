@@ -2,17 +2,12 @@
 .vs
 HomeSchoolAPI/.vscode
 HomeSchoolAPI/.vs
-HomeSchoolAPI/.config
 HomeSchoolAPI/bin
 HomeSchoolAPI/obj
 FileStorageAPI/obj
 FileStorageAPI/bin
 FileStorageAPI/.vs
 FileStorageAPI/.vscode
-FileStorageAPI/.config
-ReturnUserNamesAPI/appsettings.json
-HomeSchoolCore/appsettings.json
-TextChatAPI/appsettings.json
 ReturnUserNamesAPI/bin
 ReturnUserNamesAPI/obj
 ReturnUserNamesAPI/.vscode
@@ -24,3 +19,4 @@ HomeSchoolCore/.vs
 TextChatAPI/bin
 TextChatAPI/obj
 TextChatAPI/.vs
+TextChatAPI/.vscode

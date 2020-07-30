@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace TextChatAPI.Controllers
         }
 
         [HttpPost("sendMessage")]
+        [TokenAuthorization]
         public async Task<IActionResult> SendMessage(SendMessageDTO sendMessage)
         {
             #region TokenValidation

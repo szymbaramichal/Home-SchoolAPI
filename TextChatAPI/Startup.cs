@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,9 +33,13 @@ namespace TextChatAPI
             services.AddControllers();
             services.AddScoped<IApiHelper, ApiHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
+            services.AddScoped<TokenAuthorizationAttribute>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TextChatAPI", Version = "2115" });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
         }
 
