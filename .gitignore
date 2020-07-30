@@ -1,4 +1,5 @@
 .vscode
+.vs
 HomeSchoolAPI/.vscode
 HomeSchoolAPI/.vs
 HomeSchoolAPI/.config
@@ -6,7 +7,9 @@ HomeSchoolAPI/bin
 HomeSchoolAPI/obj
 FileStorageAPI/obj
 FileStorageAPI/bin
-FileStorageAPI/appsettings.json
+FileStorageAPI/.vs
+FileStorageAPI/.vscode
+FileStorageAPI/.config
 HomeSchoolAPI/appsettings.json
 ReturnUserNamesAPI/appsettings.json
 HomeSchoolCore/appsettings.json

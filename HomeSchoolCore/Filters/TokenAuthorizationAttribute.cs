@@ -19,14 +19,14 @@ namespace HomeSchoolCore.Filters
                 {
                     error.Err = "Token wygasł";
                     error.Desc = "Zaloguj się od nowa";
-                    context.Result = new BadRequestObjectResult(error);
+                    context.Result = new UnauthorizedObjectResult(error);
                 }
             }
             catch
             {
                 error.Err = "Nieprawidlowy token";
                 error.Desc = "Wprowadz token jeszcze raz";
-                context.Result = new BadRequestObjectResult(error);
+                context.Result = new UnauthorizedObjectResult(error);
             }         
         }
     }
