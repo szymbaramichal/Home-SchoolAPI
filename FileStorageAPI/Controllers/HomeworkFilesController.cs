@@ -36,21 +36,24 @@ namespace FileStorageAPI.Controllers
             var subject = await _apiHelper.ReturnSubjectBySubjectID(returnForHomework.classID, returnForHomework.subjectID);
             if(subject == null)
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes("");
-                MemoryStream stream = new MemoryStream(byteArray);
-                return new FileStreamResult(stream, "application/octet-stream");
+                error.Err = "Nieprawidlowe ID klasy lub przedmiotu";
+                error.Desc = "Wprowadz poprawne wartosci";
+                return NotFound(error);
             }
             if(!subject.homeworks.Contains(returnForHomework.homeworkID) && subject.teacherID != id)
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes("");
-                MemoryStream stream = new MemoryStream(byteArray);
-                return new FileStreamResult(stream, "application/octet-stream");
+                error.Err = "Nieprawidlowe ID przedmiotu lub nie jestes nauczycielem";
+                error.Desc = "Wprowadz poprawne wartosci";
+                return NotFound(error);
             }
+
             var file = await _apiHelper.ReturnHomeworkFileBySenderID(returnForHomework.classID, returnForHomework.fileID);
             string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
+
             Response.Headers.Add("fileName", asciiEquivalents);
             Response.Headers.Remove("Access-Control-Expose-Headers");
             Response.Headers.Add("Access-Control-Expose-Headers", "*");
+
             return new FileStreamResult(file.stream, file.contentType);
         }
 
@@ -68,22 +71,22 @@ namespace FileStorageAPI.Controllers
                 var subject = await _apiHelper.ReturnSubjectBySubjectID(returnForResponse.classID, returnForResponse.subjectID);
                 if(subject == null)
                 {
-                    byte[] byteArray = Encoding.ASCII.GetBytes("");
-                    MemoryStream stream = new MemoryStream(byteArray);
-                    return new FileStreamResult(stream, "application/octet-stream");
+                    error.Err = "Nieprawidlowe ID klasy lub przedmiotu";
+                    error.Desc = "Wprowadz poprawne wartosci";
+                    return NotFound(error);
                 }
                 if(subject.teacherID != id)
                 {
-                    byte[] byteArray = Encoding.ASCII.GetBytes("");
-                    MemoryStream stream = new MemoryStream(byteArray);
-                    return new FileStreamResult(stream, "application/octet-stream");
+                    error.Err = "Nie jestes nauczycielem przedmiotu";
+                    error.Desc = "Nie mozesz pobrac odpowiedzi";
+                    return NotFound(error);
                 }
             }
             else
             {
-                byte[] byteArray = Encoding.ASCII.GetBytes("");
-                MemoryStream stream = new MemoryStream(byteArray);
-                return new FileStreamResult(stream, "application/octet-stream");
+                error.Err = "Nie nalezysz do klasy";
+                error.Desc = "Nie mozesz pobrac pliku";
+                return NotFound(error);
             }
             string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
             Response.Headers.Add("fileName", asciiEquivalents);
