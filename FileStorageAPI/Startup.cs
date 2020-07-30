@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,6 +28,7 @@ namespace FileStorageAPI
 
             services.AddScoped<IApiHelper, ApiHelper>();
             services.AddScoped<ITokenHelper, TokenHelper>();
+            services.AddScoped<TokenAuthorizationAttribute>();
 
             services.AddSwaggerGen(c =>
             {

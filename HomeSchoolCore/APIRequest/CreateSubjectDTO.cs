@@ -2,8 +2,8 @@ namespace HomeSchoolCore.APIRequest
 {
     public class CreateSubjectDTO
     {
-        public string userToAddEmail { get; set; }
-        public string classID { get; set; }
-        public string subjectName { get; set; }
+        public string UserToAddEmail { get; set; }
+        public string ClassID { get; set; }
+        public string SubjectName { get; set; }
     }
 }

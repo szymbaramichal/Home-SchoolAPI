@@ -15,8 +15,8 @@ namespace HomeSchoolCore.Helpers
             SecurityToken validatedToken;
             var validation = handler.ValidateToken(token, GetParametersToValidate(), out validatedToken);
             DateTime tokendate = jsonToken.ValidTo;
-            double dateNow = (DateTime.Now - DateTime.UnixEpoch).TotalSeconds;
-            double tokenDate = (tokendate - DateTime.UnixEpoch).TotalSeconds;
+            double dateNow = (DateTime.Now - DateTime.UnixEpoch).TotalMinutes;
+            double tokenDate = (tokendate - DateTime.UnixEpoch).TotalMinutes;
             if(dateNow - tokenDate < 0)
             {
                 return true;
@@ -33,14 +33,13 @@ namespace HomeSchoolCore.Helpers
         }
         private TokenValidationParameters GetParametersToValidate()
         {
-            AppSettingsHelper appSettingsHelper = new AppSettingsHelper();
-                return new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(appSettingsHelper.tokenKey)),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+            return new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AppSettingsHelper.tokenKey)),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
         }
     }
 }

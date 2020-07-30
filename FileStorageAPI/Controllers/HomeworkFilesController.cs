@@ -54,6 +54,7 @@ namespace FileStorageAPI.Controllers
             string asciiEquivalents = Encoding.ASCII.GetString(Encoding.GetEncoding(0).GetBytes(file.fileName));
 
             Response.Headers.Add("fileName", asciiEquivalents);
+            
             Response.Headers.Remove("Access-Control-Expose-Headers");
             Response.Headers.Add("Access-Control-Expose-Headers", "*");
 

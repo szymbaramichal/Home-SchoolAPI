@@ -24,13 +24,16 @@ namespace HomeSchoolAPI.Controllers
             _tokenHelper = tokenHelper;
         }
 
+        /// <summary>
+        /// Creating class.
+        /// </summary>
         [HttpPost("create")]
         [TokenAuthorization]
         public async Task<IActionResult> CreateClass(ClassToCreateDTO classToCreate)
         {
             string token = HttpContext.Request.Headers["Authorization"];
 
-            if(String.IsNullOrWhiteSpace(classToCreate.className) || String.IsNullOrWhiteSpace(classToCreate.schoolName))
+            if(String.IsNullOrWhiteSpace(classToCreate.ClassName) || String.IsNullOrWhiteSpace(classToCreate.SchoolName))
             {
                 error.Err = "Uzupełnij wszystkie pola";
                 error.Desc = "Żadne z pól nie może zostać puste";
@@ -51,7 +54,7 @@ namespace HomeSchoolAPI.Controllers
 
                 if(creator.userRole == 1)
                 {
-                    var createdClass = await _apiHelper.CreateClass(creator, classToCreate.className, classToCreate.schoolName);
+                    var createdClass = await _apiHelper.CreateClass(creator, classToCreate.ClassName, classToCreate.SchoolName);
                     return Ok(createdClass);
                 }
                 else
@@ -62,6 +65,9 @@ namespace HomeSchoolAPI.Controllers
                 }
         }
     
+        /// <summary>
+        /// Adding teacher or student to class.
+        /// </summary>
         [HttpPut("addMember")]
         [TokenAuthorization]
         public async Task<IActionResult> AddMemberToClass([FromBody]AddToClassDTO addToClassDTO)
@@ -108,21 +114,26 @@ namespace HomeSchoolAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Deleting user or teacher from class.
+        /// </summary>
         [HttpPut("deleteMember")]
         [TokenAuthorization]
+
+        //TODO: Comment all methods in HomeSchoolAPI and other projects, check logic in Core, potem na trello popatrzeć
         public async Task<IActionResult> DeleteMember([FromBody]DeleteMemberDTO deleteMemberDTO)
         {
             string token = HttpContext.Request.Headers["Authorization"];
 
             var id = _tokenHelper.GetIdByToken(token);
-            var classObj = await _apiHelper.ReturnClassByID(deleteMemberDTO.classID);
+            var classObj = await _apiHelper.ReturnClassByID(deleteMemberDTO.ClassID);
             if(classObj == null)
             {
                 error.Err = "Niepoprawne ID klasy";
                 error.Desc = "Nie możesz usunąć członka klasy";
                 return StatusCode(409, error);
             }
-            if(!classObj.members.Contains(deleteMemberDTO.userToDeleteID))
+            if(!classObj.members.Contains(deleteMemberDTO.UserToDeleteID))
             {
                 error.Err = "Użytkownik nie należy do klasy";
                 error.Desc = "Nie możesz usunąć członka klasy";
@@ -134,47 +145,9 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Nie możesz usunąć członka klasy";
                 return StatusCode(409, error);
             }
-            var userToDelete = await _apiHelper.ReturnUserByID(deleteMemberDTO.userToDeleteID);
+            var userToDelete = await _apiHelper.ReturnUserByID(deleteMemberDTO.UserToDeleteID);
             var deleteMember = await _apiHelper.DeleteMemberFromClass(userToDelete, classObj);
             return Ok(deleteMember);
         }
-
-        [HttpPut("deleteSubject")]
-        [TokenAuthorization]
-        public async Task<IActionResult> DeleteSubject([FromBody]DeleteSubjectDTO deleteSubject)
-        {
-            string token = HttpContext.Request.Headers["Authorization"];
-
-            var id = _tokenHelper.GetIdByToken(token);
-            var classObj = await _apiHelper.ReturnClassByID(deleteSubject.classID);
-            if(classObj == null)
-            {
-                error.Err = "Zle ID klasy";
-                error.Desc = "Wprowadz ID klasy ponownie";
-                return StatusCode(409, error);
-            }
-            if(classObj.creatorID != id)
-            {
-                error.Err = "Nie jesteś wychowawcą klasy";
-                error.Desc = "Nie możesz usunąć przedmiotu";
-                return StatusCode(409, error);
-            }
-            var isDeleted = await _apiHelper.IsSubjectDeleted(deleteSubject.classID, deleteSubject.subjectID, id);
-            if(isDeleted)
-            {
-                error.Err = "Pomyślnie usunięto przedmiot";
-                error.Desc = "Udało się usunąć przedmiot";
-                return StatusCode(200, error);
-            }
-            else
-            {
-                error.Err = "Zle ID przedmiotu";
-                error.Desc = "Wprowadz poprawne ID przedmiotu";
-                return StatusCode(409, error);
-            }
-
-        }
-
-
     }
 }

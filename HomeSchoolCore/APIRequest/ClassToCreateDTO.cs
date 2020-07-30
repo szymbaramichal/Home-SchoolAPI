@@ -2,7 +2,7 @@ namespace HomeSchoolCore.APIRequest
 {
     public class ClassToCreateDTO
     {
-        public string className { get; set; }
-        public string schoolName { get; set; }
+        public string ClassName { get; set; }
+        public string SchoolName { get; set; }
     }
 }

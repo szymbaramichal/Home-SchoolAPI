@@ -24,6 +24,9 @@ namespace HomeSchoolAPI.Controllers
             _apiHelper = apiHelper;
         }
 
+        /// <summary>
+        /// Adding homework to existing subject in class.
+        /// </summary>
         [HttpPost("createHomework")]
         [TokenAuthorization]
         public async Task<IActionResult> AddHomeworkToSubject(HomeworkToAddDTO homeworkToAdd)
@@ -31,9 +34,9 @@ namespace HomeSchoolAPI.Controllers
             string token = HttpContext.Request.Headers["Authorization"];
 
             var id = _tokenHelper.GetIdByToken(token);
-            var classObj = await _apiHelper.ReturnClassByID(homeworkToAdd.classID);
+            var classObj = await _apiHelper.ReturnClassByID(homeworkToAdd.ClassID);
 
-            var subject = await _apiHelper.ReturnSubjectBySubjectID(homeworkToAdd.classID, homeworkToAdd.subjectID);
+            var subject = await _apiHelper.ReturnSubjectBySubjectID(homeworkToAdd.ClassID, homeworkToAdd.SubjectID);
 
             if(subject == null && classObj.creatorID != id)
             {
@@ -44,7 +47,7 @@ namespace HomeSchoolAPI.Controllers
 
             try
             {
-                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.name, homeworkToAdd.description, homeworkToAdd.time, homeworkToAdd.filesID, homeworkToAdd.linkHrefs);
+                var homework = await _apiHelper.AddHomeworkToSubject(subject, homeworkToAdd.Name, homeworkToAdd.Description, homeworkToAdd.Time, homeworkToAdd.FilesID, homeworkToAdd.LinkHrefs);
                 if(homework == null)
                 {
                     error.Err = "Złe ID pliku";
@@ -61,6 +64,10 @@ namespace HomeSchoolAPI.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Creating response to homework.
+        /// </summary>
         [HttpPost("createResponse")]
         [TokenAuthorization]
         public async Task<IActionResult> CreateResponse(ResponseToHomeworkDTO responseToHomework)
@@ -70,7 +77,7 @@ namespace HomeSchoolAPI.Controllers
             var id = _tokenHelper.GetIdByToken(token);
             var user = await _apiHelper.ReturnUserByID(id);   
 
-            var homework = await _apiHelper.ReturnHomeworkByIDs(responseToHomework.classID, responseToHomework.homeworkID);
+            var homework = await _apiHelper.ReturnHomeworkByIDs(responseToHomework.ClassID, responseToHomework.HomeworkID);
             if(homework == null)
             {
                 error.Err = "Złe ID zadania lub klasy";
@@ -80,18 +87,18 @@ namespace HomeSchoolAPI.Controllers
 
             Response response = new Response()
             {
-                homeworkID = responseToHomework.homeworkID,
+                homeworkID = responseToHomework.HomeworkID,
                 senderID = id,
                 senderName = user.name,
                 senderSurname = user.surrname,
                 mark = "",
-                description = responseToHomework.description,
+                description = responseToHomework.Description,
                 homeworkName = homework.name,
                 sendTime = DateTime.Now,
-                files = responseToHomework.filesID,
-                linkHrefs = responseToHomework.linkHrefs
+                files = responseToHomework.FilesID,
+                linkHrefs = responseToHomework.LinkHrefs
             };
-            var responseReturn = await _apiHelper.CreateResponse(response, responseToHomework.classID, homework);
+            var responseReturn = await _apiHelper.CreateResponse(response, responseToHomework.ClassID, homework);
             if(responseReturn == null)
             {
                 error.Err = "Nie możesz już oddać zadania";
@@ -100,6 +107,10 @@ namespace HomeSchoolAPI.Controllers
             }
             return Ok(responseReturn);
         }
+        
+        /// <summary>
+        /// Deleting homework.
+        /// </summary>
         [HttpPut("deleteHomework")]
         [TokenAuthorization]
         public async Task<IActionResult> DeleteHomework([FromBody]DeleteHomeworkDTO deleteHomework)
@@ -107,14 +118,14 @@ namespace HomeSchoolAPI.Controllers
             string token = HttpContext.Request.Headers["Authorization"];
 
             var id = _tokenHelper.GetIdByToken(token);
-            var subject = await _apiHelper.ReturnSubjectBySubjectID(deleteHomework.classID, deleteHomework.subjectID);
+            var subject = await _apiHelper.ReturnSubjectBySubjectID(deleteHomework.ClassID, deleteHomework.SubjectID);
             if(subject.teacherID != id)
             {
                 error.Err = "Nie jestes nauczycielem klasy";
                 error.Desc = "Nie możesz usunąć przedmiotu";
                 return StatusCode(405, error);
             }
-            var isDeleted = await _apiHelper.isHomeworkDeleted(deleteHomework.homeworkID, deleteHomework.subjectID, deleteHomework.classID);
+            var isDeleted = await _apiHelper.isHomeworkDeleted(deleteHomework.HomeworkID, deleteHomework.SubjectID, deleteHomework.ClassID);
             if(isDeleted)
             {
                 error.Err = "Pomyślnie usunięto zadanie";

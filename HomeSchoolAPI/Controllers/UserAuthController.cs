@@ -10,7 +10,6 @@ using HomeSchoolCore.Filters;
 using HomeSchoolCore.Helpers;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HomeSchoolAPI.Controllers
@@ -19,20 +18,19 @@ namespace HomeSchoolAPI.Controllers
     [ApiController]
     public class UserAuthController : ControllerBase
     {
-        
-        private IConfiguration _configuration;
         private IApiHelper _apiHelper;
         private ITokenHelper _tokenHelper;
         private Error error;
-        public UserAuthController(IConfiguration configuration, ITokenHelper tokenHelper, IApiHelper apiHelper)
+        public UserAuthController(ITokenHelper tokenHelper, IApiHelper apiHelper)
         {
             _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
             error = new Error();
-            _configuration = configuration;
         }
 
-
+        /// <summary>
+        /// Register user.
+        /// </summary>
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserForRegisterDTO userForRegister)
         {
@@ -116,7 +114,7 @@ namespace HomeSchoolAPI.Controllers
                 new Claim(ClaimTypes.Email, user.email)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppSettingsHelper.tokenKey));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
@@ -138,6 +136,9 @@ namespace HomeSchoolAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Login with token from header.
+        /// </summary>
         [HttpGet("loginviatoken")]
         [TokenAuthorization]
         public async Task<IActionResult> LoginViaToken()
@@ -169,6 +170,9 @@ namespace HomeSchoolAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Login with mail and password.
+        /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDTO userForLogin)
         {
@@ -203,7 +207,7 @@ namespace HomeSchoolAPI.Controllers
                 new Claim(ClaimTypes.Email, user.email)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppSettingsHelper.tokenKey));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 

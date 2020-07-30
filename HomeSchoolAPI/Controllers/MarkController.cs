@@ -21,6 +21,9 @@ namespace HomeSchoolAPI.Controllers
             _tokenHelper = tokenHelper;
         }
 
+        /// <summary>
+        /// Put mark to response to homework.
+        /// </summary>
         [HttpPut]
         [TokenAuthorization]
         public async Task<IActionResult> PutMark([FromBody] PutMarkDTO putMark)
@@ -29,21 +32,21 @@ namespace HomeSchoolAPI.Controllers
 
             var id = _tokenHelper.GetIdByToken(token);
             
-            var subject = await _apiHelper.ReturnSubjectBySubjectID(putMark.classID, putMark.subjectID);
+            var subject = await _apiHelper.ReturnSubjectBySubjectID(putMark.ClassID, putMark.SubjectID);
             if(subject == null)
             {
                 error.Err = "Nie jesteś nauczycielem przedmiotu";
                 error.Desc = "Nie możesz ocenić zadania";
                 return StatusCode(405, error);
             }
-            if(!subject.homeworks.Contains(putMark.homeworkID))
+            if(!subject.homeworks.Contains(putMark.HomeworkID))
             {
                 error.Err = "Niepoprawne ID zadania";
                 error.Desc = "Wprowadz zadanie ponownie";
                 return StatusCode(405, error);
             }
 
-            var response = await _apiHelper.PutMark(putMark.homeworkID, putMark.responseID, putMark.mark);
+            var response = await _apiHelper.PutMark(putMark.HomeworkID, putMark.ResponseID, putMark.Mark);
             if(response == null)
             {
                 error.Err = "Niepoprawne ID odpowiedzi";

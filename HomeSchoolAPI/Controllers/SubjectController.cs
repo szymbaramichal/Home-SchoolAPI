@@ -20,7 +20,10 @@ namespace HomeSchoolAPI.Controllers
             _apiHelper = apiHelper;
             _tokenHelper = tokenHelper;
         }
- 
+
+        /// <summary>
+        /// Creating subject in class.
+        /// </summary>
         [HttpPost("create")]
         [TokenAuthorization]
         public async Task<IActionResult> CreateSubject(CreateSubjectDTO createSubjectDTO)
@@ -30,7 +33,7 @@ namespace HomeSchoolAPI.Controllers
 
             var id = _tokenHelper.GetIdByToken(token);
 
-            var user = await _apiHelper.ReturnUserByMail(createSubjectDTO.userToAddEmail);
+            var user = await _apiHelper.ReturnUserByMail(createSubjectDTO.UserToAddEmail);
 
             if(user == null || user.userRole == 0)
             {
@@ -39,7 +42,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            var classObj = await _apiHelper.ReturnClassByID(createSubjectDTO.classID);
+            var classObj = await _apiHelper.ReturnClassByID(createSubjectDTO.ClassID);
 
             if(classObj == null)
             {
@@ -55,11 +58,50 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            var subject = await _apiHelper.AddSubjectToClass(user.Id, classObj, createSubjectDTO.subjectName);
+            var subject = await _apiHelper.AddSubjectToClass(user.Id, classObj, createSubjectDTO.SubjectName);
             
             await _apiHelper.ReplaceClassInfo(subject.classObj);
 
             return Ok(subject);
+        }
+
+        /// <summary>
+        /// Deleting subject in class.
+        /// </summary>
+        [HttpPut("deleteSubject")]
+        [TokenAuthorization]
+        public async Task<IActionResult> DeleteSubject([FromBody]DeleteSubjectDTO deleteSubject)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+
+            var id = _tokenHelper.GetIdByToken(token);
+            var classObj = await _apiHelper.ReturnClassByID(deleteSubject.ClassID);
+            if(classObj == null)
+            {
+                error.Err = "Zle ID klasy";
+                error.Desc = "Wprowadz ID klasy ponownie";
+                return StatusCode(409, error);
+            }
+            if(classObj.creatorID != id)
+            {
+                error.Err = "Nie jesteś wychowawcą klasy";
+                error.Desc = "Nie możesz usunąć przedmiotu";
+                return StatusCode(409, error);
+            }
+            var isDeleted = await _apiHelper.IsSubjectDeleted(deleteSubject.ClassID, deleteSubject.SubjectID, id);
+            if(isDeleted)
+            {
+                error.Err = "Pomyślnie usunięto przedmiot";
+                error.Desc = "Udało się usunąć przedmiot";
+                return StatusCode(200, error);
+            }
+            else
+            {
+                error.Err = "Zle ID przedmiotu";
+                error.Desc = "Wprowadz poprawne ID przedmiotu";
+                return StatusCode(409, error);
+            }
+
         }
     }
 }

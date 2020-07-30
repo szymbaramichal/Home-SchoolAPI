@@ -23,8 +23,7 @@ namespace HomeSchoolCore.Helpers
         private IMongoDatabase database;
         public ApiHelper()
         {
-            AppSettingsHelper appSettingsHelper = new AppSettingsHelper();
-            var client = new MongoClient(appSettingsHelper.connectionString);
+            var client = new MongoClient(AppSettingsHelper.connectionString);
             database = client.GetDatabase("ELearningDB");
             _users = database.GetCollection<User>("Users");
         }

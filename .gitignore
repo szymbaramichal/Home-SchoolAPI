@@ -10,7 +10,6 @@ FileStorageAPI/bin
 FileStorageAPI/.vs
 FileStorageAPI/.vscode
 FileStorageAPI/.config
-HomeSchoolAPI/appsettings.json
 ReturnUserNamesAPI/appsettings.json
 HomeSchoolCore/appsettings.json
 TextChatAPI/appsettings.json
