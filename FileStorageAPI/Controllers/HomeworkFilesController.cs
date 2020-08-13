@@ -117,6 +117,13 @@ namespace FileStorageAPI.Controllers
 
             var id = _tokenHelper.GetIdByToken(token);
 
+            if(file == null)
+            {
+                error.Err = "Nie przesłano pliku";
+                error.Desc = "Wprowadź plik jeszcze raz";
+                return StatusCode(405, error);
+            }
+
             var classObj = await _apiHelper.ReturnClassByID(classID);
             if(classObj.members.Contains(id))
             {
@@ -149,6 +156,13 @@ namespace FileStorageAPI.Controllers
         {
             string token = HttpContext.Request.Headers["Authorization"];
             token = token.Replace("Bearer ", string.Empty);
+
+            if(file == null)
+            {
+                error.Err = "Nie przesłano pliku";
+                error.Desc = "Wprowadź plik jeszcze raz";
+                return StatusCode(405, error);
+            }
             
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(classID);

@@ -32,13 +32,14 @@ namespace HomeSchoolAPI.Controllers
         public async Task<IActionResult> AddHomeworkToSubject(HomeworkToAddDTO homeworkToAdd)
         {
             string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
             var classObj = await _apiHelper.ReturnClassByID(homeworkToAdd.ClassID);
 
             var subject = await _apiHelper.ReturnSubjectBySubjectID(homeworkToAdd.ClassID, homeworkToAdd.SubjectID);
 
-            if(subject == null && classObj.creatorID != id)
+            if(subject == null || classObj.creatorID != id || classObj == null)
             {
                 error.Err = "Nie jestes nauczycielem tej klasy";
                 error.Desc = "Nie mozesz dodac zadania";
