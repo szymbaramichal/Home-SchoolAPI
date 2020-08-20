@@ -16,10 +16,12 @@ namespace HomeSchoolCore.Helpers
         private IMongoCollection<User> _users;
         private IMongoCollection<Subject> _subjects;
         private IMongoCollection<Homework> _homeworks;
-        private IMongoCollection<Response> _responses;
+        private IMongoCollection<ResponseToHomework> _responses;
         private IMongoCollection<FileDoc> _files;
         private IMongoCollection<TextMessage> _messages;
         private IMongoCollection<ChatInfo> _chatInfos;
+        private IMongoCollection<Quiz> _quizes;
+        private IMongoCollection<ResponseToQuiz> _responseToQuiz;
         private IMongoDatabase database;
         public ApiHelper()
         {
@@ -216,6 +218,8 @@ namespace HomeSchoolCore.Helpers
             await database.CreateCollectionAsync(classToAdd.Id+"_su");
             await database.CreateCollectionAsync(classToAdd.Id+"_ho");
             await database.CreateCollectionAsync(classToAdd.Id+"_files");
+            await database.CreateCollectionAsync(classToAdd.Id+"_quizes");
+            await database.CreateCollectionAsync(classToAdd.Id+"_quizesAnswers");
             var filter = Builders<User>.Filter.Eq(u => u.Id, creator.Id);
             creator.classMember.Add(classToAdd.Id);
             await _users.ReplaceOneAsync(filter, creator);
@@ -247,7 +251,26 @@ namespace HomeSchoolCore.Helpers
                 usersNames.Add(user.name + " " + user.surrname);
             }
             return usersNames;
+        }    
+        public async Task<bool> DoesUserBelongToClass(string userId, string classId)
+        {
+            try
+            {
+                _classes = database.GetCollection<Class>(classId);
+            } 
+            catch
+            {
+                return false;
+            }
+
+            var classDoc = await _classes.Find<Class>(x => x.Id == classId).FirstOrDefaultAsync();
+            foreach(var usrId in classDoc.members)
+            {
+                if(usrId == userId) return true;
+            }
+            return false;
         }
+        
         #endregion
 
         #region SubjectsMethods
@@ -490,11 +513,11 @@ namespace HomeSchoolCore.Helpers
             await _subjects.ReplaceOneAsync(filter, subject);
             return homework;
         }
-        public async Task<ResponseReturn> CreateResponse(Response response, string classID, Homework homework)
+        public async Task<ResponseReturn> CreateResponse(ResponseToHomework response, string classID, Homework homework)
         {
             try
             {
-                _responses = database.GetCollection<Response>(response.homeworkID+"_re");
+                _responses = database.GetCollection<ResponseToHomework>(response.homeworkID+"_re");
                 _homeworks = database.GetCollection<Homework>(classID+"_ho");
             }
             catch
@@ -526,20 +549,20 @@ namespace HomeSchoolCore.Helpers
                 Name = homework.name,
                 Description = homework.description,
                 SubjectID = homework.subjectID,
-                Responses = new List<Response>(),
+                Responses = new List<ResponseToHomework>(),
                 CreateDate = homework.createDate,
                 EndDate = homework.endDate,
                 Files = homework.files.ToArray(),
                 LinkHrefs = homework.linkHrefs.ToArray()
             };
             
-            List<Response> userResponses = new List<Response>();
-            _responses = database.GetCollection<Response>(homework.Id+"_re");
+            List<ResponseToHomework> userResponses = new List<ResponseToHomework>();
+            _responses = database.GetCollection<ResponseToHomework>(homework.Id+"_re");
             _subjects = database.GetCollection<Subject>(classID+"_su");
             var subject = await _subjects.Find<Subject>(x => x.Id == homework.subjectID).FirstOrDefaultAsync();
             for (int i = 0; i < homework.responses.Count; i++)
             {
-                var response = await _responses.Find<Response>(x => x.Id == homework.responses[i]).FirstOrDefaultAsync();
+                var response = await _responses.Find<ResponseToHomework>(x => x.Id == homework.responses[i]).FirstOrDefaultAsync();
                 if(response.senderID == userID) userResponses.Add(response);
                 homeworkToReturn.Responses.Add(response);
             }
@@ -553,12 +576,12 @@ namespace HomeSchoolCore.Helpers
                 return homeworkToReturn;            
             }
         }
-        public async Task<Response> PutMark(string homeworkID, string responseID, string mark)
+        public async Task<ResponseToHomework> PutMark(string homeworkID, string responseID, string mark)
         {
-            _responses = database.GetCollection<Response>(homeworkID+"_re");
-            var response = await _responses.Find<Response>(x => x.Id == responseID).FirstOrDefaultAsync();
+            _responses = database.GetCollection<ResponseToHomework>(homeworkID+"_re");
+            var response = await _responses.Find<ResponseToHomework>(x => x.Id == responseID).FirstOrDefaultAsync();
             response.mark = mark;
-            var filter = Builders<Response>.Filter.Eq(x => x.Id, responseID);
+            var filter = Builders<ResponseToHomework>.Filter.Eq(x => x.Id, responseID);
             await _responses.ReplaceOneAsync(filter, response);
             return response;
         }
@@ -668,7 +691,7 @@ namespace HomeSchoolCore.Helpers
             returnFile.ClassID = fileObj.classID;
             return returnFile;
         }
-        public async Task<bool> isHomeworkDeleted(string homeworkID, string subjectID, string classID)
+        public async Task<bool> IsHomeworkDeleted(string homeworkID, string subjectID, string classID)
         {
             try
             {
@@ -694,6 +717,49 @@ namespace HomeSchoolCore.Helpers
                 await _files.DeleteOneAsync(x => x.Id == homework.files[i]);
             }
             await _homeworks.DeleteOneAsync<Homework>(x => x.Id == homeworkID);
+            return true;
+        }
+        #endregion
+    
+        #region Quizes
+        public async Task<bool> IsQuizAdded(Quiz quizObj)
+        {
+            _quizes = database.GetCollection<Quiz>(quizObj.classID+"_quizes");
+            await _quizes.InsertOneAsync(quizObj);
+            return true;
+        }
+
+        public async Task<List<Quiz>> ReturnAllActiveQuizesForClass(string classID)
+        {
+            _quizes = database.GetCollection<Quiz>(classID+"_quizes");
+            List<Quiz> quizes = new List<Quiz>();
+            quizes = await _quizes.AsQueryable().ToListAsync();
+            foreach (var quiz in quizes)
+            {
+                if(DateTime.Compare(quiz.FinishDate, DateTime.Now) < 0 || quiz.status == "INACTIVE") quizes.Remove(quiz);
+            }
+            return quizes;
+        }
+        
+        public async Task<Quiz> ReturnQuizById(string classId, string quizId)
+        {
+            try
+            {
+                _quizes = database.GetCollection<Quiz>(classId+"_quizes");
+                var quiz = await _quizes.Find<Quiz>(x => x.Id == quizId).FirstOrDefaultAsync();
+                if(quiz != null) return quiz;
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        
+        public async Task<bool> SaveAnswersToQuiz(ResponseToQuiz responseToQuiz)
+        {
+            _responseToQuiz = database.GetCollection<ResponseToQuiz>(responseToQuiz.classId + "_quizesAnswers");
+            await _responseToQuiz.InsertOneAsync(responseToQuiz);
             return true;
         }
         #endregion

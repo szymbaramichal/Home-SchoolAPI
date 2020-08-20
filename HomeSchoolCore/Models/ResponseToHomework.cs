@@ -5,7 +5,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace HomeSchoolCore.Models
 {
-    public class Response
+    public class ResponseToHomework
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

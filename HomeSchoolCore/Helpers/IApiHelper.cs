@@ -18,6 +18,7 @@ namespace HomeSchoolCore.Helpers
         Task<SubjectReturn> AddSubjectToClass(string teacherId, Class classToEdit, string subjectName);
         Task<Class> DeleteMemberFromClass(User user, Class classObj);
         Task<List<string>> ReturnNames(Class classObj);
+        Task<bool> DoesUserBelongToClass(string userId, string classId);
         #endregion
         #region Subject
         Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject, string userID);
@@ -39,11 +40,11 @@ namespace HomeSchoolCore.Helpers
         Task<string> UploadFileToHomework(IFormFile file, string classID, string senderID, string subjectID);
         Task<Homework> ReturnHomeworkByIDs(string classID, string homeworkID);
         Task<ReturnFile> ReturnHomeworkFileBySenderID(string homeworkID, string fileID);
-        Task<bool> isHomeworkDeleted(string homeworkID, string subjectID, string classID);
+        Task<bool> IsHomeworkDeleted(string homeworkID, string subjectID, string classID);
         #endregion
         #region Response
-        Task<ResponseReturn> CreateResponse(Response response, string classID, Homework homework);
-        Task<Response> PutMark(string homeworkID, string responseID, string mark);
+        Task<ResponseReturn> CreateResponse(ResponseToHomework response, string classID, Homework homework);
+        Task<ResponseToHomework> PutMark(string homeworkID, string responseID, string mark);
         Task<string> UploadFileToResponse(IFormFile file, string homeworkID, string senderID, string subjectID, string classID);
         Task<ReturnFile> ReturnResponseFileBySenderID(string homeworkID, string fileID);
 
@@ -53,6 +54,12 @@ namespace HomeSchoolCore.Helpers
         Task<TextMessage> SendMessage(string subjectID, TextMessage textMessage);
         Task<List<TextMessage>> ReturnNewerMessages(int lastMessageID, string subjectID);
         Task<List<TextMessage>> ReturnOlderMessages(int lastMessageID, string subjectID);
+        #endregion
+        #region Quizes
+        Task<bool> IsQuizAdded(Quiz quizObj);
+        Task<List<Quiz>> ReturnAllActiveQuizesForClass(string classID);
+        Task<Quiz> ReturnQuizById(string classId, string quizId);
+        Task<bool> SaveAnswersToQuiz(ResponseToQuiz responseToQuiz);
         #endregion
     }
 

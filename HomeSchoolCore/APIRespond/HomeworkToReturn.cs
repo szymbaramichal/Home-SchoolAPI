@@ -10,7 +10,7 @@ namespace HomeSchoolCore.APIRespond
         public string Name { get; set; }
         public string Description { get; set; }
         public string SubjectID { get; set; }
-        public List<Response> Responses { get; set; }
+        public List<ResponseToHomework> Responses { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime EndDate { get; set; }
         public string[] Files { get; set; }

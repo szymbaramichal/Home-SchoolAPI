@@ -87,7 +87,7 @@ namespace HomeSchoolAPI.Controllers
                 return StatusCode(405, error);
             }
 
-            Response response = new Response()
+            ResponseToHomework response = new ResponseToHomework()
             {
                 homeworkID = responseToHomework.HomeworkID,
                 senderID = id,
@@ -128,7 +128,7 @@ namespace HomeSchoolAPI.Controllers
                 error.Desc = "Nie możesz usunąć przedmiotu";
                 return StatusCode(405, error);
             }
-            var isDeleted = await _apiHelper.isHomeworkDeleted(deleteHomework.HomeworkID, deleteHomework.SubjectID, deleteHomework.ClassID);
+            var isDeleted = await _apiHelper.IsHomeworkDeleted(deleteHomework.HomeworkID, deleteHomework.SubjectID, deleteHomework.ClassID);
             if(isDeleted)
             {
                 error.Err = "Pomyślnie usunięto zadanie";

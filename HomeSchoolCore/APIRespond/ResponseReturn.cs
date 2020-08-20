@@ -4,7 +4,7 @@ namespace HomeSchoolCore.APIRespond
 {
     public class ResponseReturn
     {
-        public Response ResponseObj { get; set; }
+        public ResponseToHomework ResponseObj { get; set; }
         public Homework HomeworkObj { get; set; }
         public string HomeworkName { get; set; }
     }
