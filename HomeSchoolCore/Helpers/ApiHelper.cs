@@ -28,6 +28,8 @@ namespace HomeSchoolCore.Helpers
             var client = new MongoClient(AppSettingsHelper.connectionString);
             database = client.GetDatabase("ELearningDB");
             _users = database.GetCollection<User>("Users");
+            _classes = database.GetCollection<Class>("Classes");
+            _subjects = database.GetCollection<Subject>("Subjects");
         }
 
         #region UsersMethods
@@ -109,7 +111,6 @@ namespace HomeSchoolCore.Helpers
         #region ClasessMethods
         public async Task<ClassToReturn> ReturnClassToReturn(Class classObj, string userID)
         {
-            _subjects = database.GetCollection<Subject>(classObj.Id+"_su");
             ClassToReturn classToReturn = new ClassToReturn();
             List<SubjectToReturn> subjects = new List<SubjectToReturn>();
             List<SubjectToReturn> subjectsForStudent = new List<SubjectToReturn>();
@@ -166,7 +167,6 @@ namespace HomeSchoolCore.Helpers
         {
             try
             {
-                _classes = database.GetCollection<Class>(id);
                 var klasa = await _classes.Find<Class>(x => x.Id == id).FirstOrDefaultAsync();
                 return klasa;
             }
@@ -177,7 +177,6 @@ namespace HomeSchoolCore.Helpers
         }
         public async Task<Class> AddMemberToClass(string email, Class classObj)
         {
-            _classes = database.GetCollection<Class>(classObj.Id);
             var filter = Builders<Class>.Filter.Eq(x => x.Id, classObj.Id);
             var user = await _users.Find<User>(x => x.email == email).FirstOrDefaultAsync();
             for (int i = 0; i < classObj.members.Count; i++)
@@ -199,7 +198,6 @@ namespace HomeSchoolCore.Helpers
 
             await database.CreateCollectionAsync(className);
 
-            _classes = database.GetCollection<Class>(className);
             Class classToAdd = new Class 
             {
                 className = className,
@@ -228,7 +226,6 @@ namespace HomeSchoolCore.Helpers
         }
         public async Task<Class> ReplaceClassInfo(Class classToChange)
         {
-            _classes = database.GetCollection<Class>(classToChange.Id);
             var filter = Builders<Class>.Filter.Eq(x => x.Id, classToChange.Id);
             await _classes.ReplaceOneAsync(filter, classToChange);
             return classToChange;
@@ -254,14 +251,6 @@ namespace HomeSchoolCore.Helpers
         }    
         public async Task<bool> DoesUserBelongToClass(string userId, string classId)
         {
-            try
-            {
-                _classes = database.GetCollection<Class>(classId);
-            } 
-            catch
-            {
-                return false;
-            }
 
             var classDoc = await _classes.Find<Class>(x => x.Id == classId).FirstOrDefaultAsync();
             foreach(var usrId in classDoc.members)
@@ -276,8 +265,6 @@ namespace HomeSchoolCore.Helpers
         #region SubjectsMethods
         public async Task<SubjectReturn> AddSubjectToClass(string teacherID, Class classToEdit, string subjectName)
         {
-            _subjects = database.GetCollection<Subject>(classToEdit.Id+"_su");
-            
             Subject subject = new Subject()
             {
                 name = subjectName,
@@ -329,16 +316,8 @@ namespace HomeSchoolCore.Helpers
         }
         public async Task<Subject> ReturnSubjectBySubjectID(string classID, string subjectID)
         {
-            try
-            {
-                _subjects = database.GetCollection<Subject>(classID+"_su");
-                var subject = await _subjects.Find<Subject>(x => x.Id == subjectID).FirstOrDefaultAsync();
-                return subject;
-            }
-            catch
-            {
-                return null;
-            }
+            var subject = await _subjects.Find<Subject>(x => x.Id == subjectID).FirstOrDefaultAsync();
+            return subject;
         }
         public async Task<SubjectToReturn> ReturnSubjectToReturn(Subject subject, string userID)
         {
@@ -361,15 +340,8 @@ namespace HomeSchoolCore.Helpers
         }
         public async Task<bool> IsSubjectDeleted(string classID, string subjectID, string userID)
         {
-            try
-            {
-                _classes = database.GetCollection<Class>(classID);
-                _subjects = database.GetCollection<Subject>(classID+"_su");
-            }
-            catch
-            {
-                return false;
-            }
+            _subjects = database.GetCollection<Subject>(classID+"_su");
+
             var classObj = await _classes.Find<Class>(x => x.Id == classID).FirstOrDefaultAsync();
             var subject = await _subjects.Find<Subject>(x => x.Id == subjectID).FirstOrDefaultAsync();
 
@@ -486,7 +458,6 @@ namespace HomeSchoolCore.Helpers
         public async Task<Homework> AddHomeworkToSubject(Subject subject, string name, string description, DateTime time, List<string> filesID, List<string> linkHrefs)
         {
             _homeworks = database.GetCollection<Homework>(subject.classID+"_ho");
-            _subjects = database.GetCollection<Subject>(subject.classID+"_su");
             _files = database.GetCollection<FileDoc>(subject.classID+"_files");
             for (int i = 0; i < filesID.Count; i++)
             {
@@ -558,7 +529,6 @@ namespace HomeSchoolCore.Helpers
             
             List<ResponseToHomework> userResponses = new List<ResponseToHomework>();
             _responses = database.GetCollection<ResponseToHomework>(homework.Id+"_re");
-            _subjects = database.GetCollection<Subject>(classID+"_su");
             var subject = await _subjects.Find<Subject>(x => x.Id == homework.subjectID).FirstOrDefaultAsync();
             for (int i = 0; i < homework.responses.Count; i++)
             {
@@ -697,7 +667,6 @@ namespace HomeSchoolCore.Helpers
             {
                 _homeworks = database.GetCollection<Homework>(classID+"_ho");
                 _files = database.GetCollection<FileDoc>(classID+"_files");
-                _subjects = database.GetCollection<Subject>(classID+"_su");
             }
             catch 
             {
