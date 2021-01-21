@@ -107,6 +107,7 @@ namespace HomeSchoolAPI.Controllers
             }
 
             UserToReturn userToReturn = _apiHelper.ReturnUserToReturn(user);
+
             #region TokenCreating
             var claims = new[]
             {
@@ -129,6 +130,7 @@ namespace HomeSchoolAPI.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             #endregion 
+            
             return Ok(new {
                 token = tokenHandler.WriteToken(token),
                 userToReturn,

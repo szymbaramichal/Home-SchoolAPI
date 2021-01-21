@@ -57,7 +57,7 @@ namespace HomeSchoolCore.Helpers
         #endregion
         #region Quizes
         Task<bool> IsQuizAdded(Quiz quizObj);
-        Task<List<Quiz>> ReturnAllActiveQuizesForClass(string classID);
+        Task<QuizesToReturn> ReturnAllActiveQuizesForClass(string classId, string userId);
         Task<Quiz> ReturnQuizById(string classId, string quizId);
         Task<bool> SaveAnswersToQuiz(ResponseToQuiz responseToQuiz);
         #endregion

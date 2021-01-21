@@ -8,7 +8,5 @@ namespace HomeSchoolCore.APIRequest
         public string quizId { get; set; }
         public string classId { get; set; }
         public List<string> answers { get; set; }
-        public DateTime FinishDate { get; set; }
-        
     }
 }

@@ -16,6 +16,7 @@ namespace HomeSchoolCore.Models
         public string subjectID { get; set; }
         public int amountOfQuestions { get; set; }
         public List<Question> questions { get; set; }
+        public List<string> executonersId { get; set; } = new List<string>();
         public DateTime CreateDate { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime FinishDate { get; set; }

@@ -53,6 +53,7 @@ namespace HomeSchoolAPI.Controllers
             }
         
             Quiz quiz = new Quiz();
+            quiz.name = createQuiz.name;
             quiz.classID = createQuiz.classID;
             quiz.subjectID = createQuiz.subjectID;
             quiz.CreateDate = DateTime.Now;
@@ -72,7 +73,7 @@ namespace HomeSchoolAPI.Controllers
         /// </summary>
         [HttpGet("getAllQuizes/{classId}")]
         [TokenAuthorization]
-        public async Task<ActionResult<List<Quiz>>> GetAllActiveQuizesForClass(string classId)
+        public async Task<ActionResult<QuizesToReturn>> GetAllActiveQuizesForClass(string classId)
         {
             string token = HttpContext.Request.Headers["Authorization"];
             token = token.Replace("Bearer ", string.Empty);
@@ -88,8 +89,8 @@ namespace HomeSchoolAPI.Controllers
                 return BadRequest(error);
             }
 
-            List<Quiz> quizes = new List<Quiz>();
-            quizes = await _apiHelper.ReturnAllActiveQuizesForClass(classId);
+            var quizes = await _apiHelper.ReturnAllActiveQuizesForClass(classId, id);
+            if(quizes == null) return NoContent();
 
             return quizes;
         }
@@ -105,8 +106,15 @@ namespace HomeSchoolAPI.Controllers
 
             int correctAnswersAmount = 0;
 
-            var quiz = await _apiHelper.ReturnQuizById(completeQuiz.classId, completeQuiz.quizId);
+            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, completeQuiz.classId);
+            if(!isUserInClass)
+            {
+                error.Err = "Nie należysz do tej klasy";
+                error.Desc = "Wprowadź poprawne ID klasy i quizu";
+                return NotFound(error);
+            }
 
+            var quiz = await _apiHelper.ReturnQuizById(completeQuiz.classId, completeQuiz.quizId);
             if(quiz == null)
             {
                 error.Err = "Nie znaleziono quizu o podanym ID";
@@ -114,12 +122,10 @@ namespace HomeSchoolAPI.Controllers
                 return NotFound(error);
             }
 
-            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, completeQuiz.classId);
-
-            if(!isUserInClass)
+            if(DateTime.Compare(quiz.FinishDate, DateTime.Now) < 0)
             {
-                error.Err = "Nie należysz do tej klasy";
-                error.Desc = "Wprowadź poprawne ID klasy i quizu";
+                error.Err = "Nie mozesz wyslac odpowiedzi do quizu.";
+                error.Desc = "Czas na odsylanie odpowiedzi minął.";
                 return NotFound(error);
             }
 
@@ -137,13 +143,20 @@ namespace HomeSchoolAPI.Controllers
             responseToQuiz.executonerId = id;
             responseToQuiz.classId = completeQuiz.classId;
             responseToQuiz.FinishDate = DateTime.Now;
-            responseToQuiz.percentageOfCorrectAnswers = (double)correctAnswersAmount/quiz.questions.Count;
+            responseToQuiz.percentageOfCorrectAnswers = (double)correctAnswersAmount/quiz.questions.Count * 100;
             responseToQuiz.quizId = quiz.Id;
 
-            var isAnswersSaved = await _apiHelper.SaveAnswersToQuiz(responseToQuiz);
+            bool isAnswerCorrect = await _apiHelper.SaveAnswersToQuiz(responseToQuiz);
+
+            if(!isAnswerCorrect)
+            {
+                error.Err = "Nie mozesz wyslac odpowiedzi do quizu.";
+                error.Desc = "Już raz je przesłałeś.";
+                return NotFound(error);
+            }
 
             CompleteQuiz completeQuizToReturn = new CompleteQuiz();
-            completeQuizToReturn.percentageOfCorrectAnswers = responseToQuiz.percentageOfCorrectAnswers;
+            completeQuizToReturn.PercentageOfCorrectAnswers = responseToQuiz.percentageOfCorrectAnswers;
 
             return Ok(completeQuizToReturn);
         }
