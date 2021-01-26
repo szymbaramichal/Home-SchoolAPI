@@ -92,7 +92,7 @@ namespace HomeSchoolAPI.Controllers
             if(userForRegister.UserRole == 1)
             {
                 userToCreate.userCode = null;
-                userForRegister.Email = userForRegister.Email.ToLower();
+                userToCreate.email = userForRegister.Email.ToLower();
                 var createdUser = await _apiHelper.RegisterUser(userToCreate, userForRegister.Password);
             }
 

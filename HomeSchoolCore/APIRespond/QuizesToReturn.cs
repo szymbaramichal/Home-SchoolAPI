@@ -6,6 +6,6 @@ namespace HomeSchoolCore.APIRespond
     public class QuizesToReturn
     {
         public List<Quiz> Quizes { get; set; }
-        public List<AnswerToReturn> Answers { get; set; }
+        public List<AnswerToReturn> Answers { get; set; } = new List<AnswerToReturn>();
     }
 }

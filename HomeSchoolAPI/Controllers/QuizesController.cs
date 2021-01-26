@@ -42,45 +42,41 @@ namespace HomeSchoolAPI.Controllers
             {
                 error.Err = "Nie znaleziono przedmiotu w klasie o podanym ID.";
                 error.Desc = "Wprowadź poprawne wartości ID dla klasy i przedmiotu.";
-                return NotFound();
+                return NotFound(error);
             }
 
             if(subject.teacherID != id)
             {
                 error.Err = "Nie jesteś nauczycielem tego przedmiotu.";
                 error.Desc = "Nie możesz dodać quizu.";
-                return NotFound();
+                return NotFound(error);
             }
-        
-            Quiz quiz = new Quiz();
-            quiz.name = createQuiz.name;
-            quiz.classID = createQuiz.classID;
-            quiz.subjectID = createQuiz.subjectID;
-            quiz.CreateDate = DateTime.Now;
-            quiz.StartDate = createQuiz.StartDate;
-            quiz.FinishDate = createQuiz.FinishDate;
-            quiz.questions = createQuiz.questions;
-            quiz.amountOfQuestions = createQuiz.questions.Count;
-            quiz.status = "ACTIVE";
 
-            var isQuizAdded = await _apiHelper.IsQuizAdded(quiz);
+            if(DateTime.Compare(createQuiz.FinishDate, DateTime.Now) < 0)
+            {
+                error.Err = "Data końcowa jest wcześniejsza jak obecna.";
+                error.Desc = "Nie możesz dodać quizu.";
+                return NotFound(error);
+            }
 
-            return Ok(quiz);
+            var isQuizAdded = await _apiHelper.IsQuizAdded(createQuiz);
+
+            return Ok(isQuizAdded);
         }
 
         /// <summary>
         /// Return all quizes for class.
         /// </summary>
-        [HttpGet("getAllQuizes/{classId}")]
+        [HttpGet("getAllQuizes/{classID}/{subjectID}")]
         [TokenAuthorization]
-        public async Task<ActionResult<QuizesToReturn>> GetAllActiveQuizesForClass(string classId)
+        public async Task<ActionResult<QuizesToReturn>> GetQuizesForSubject(string classID, string subjectID)
         {
             string token = HttpContext.Request.Headers["Authorization"];
             token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
 
-            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, classId);
+            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, classID);
         
             if(!isUserInClass)
             {
@@ -89,16 +85,81 @@ namespace HomeSchoolAPI.Controllers
                 return BadRequest(error);
             }
 
-            var quizes = await _apiHelper.ReturnAllActiveQuizesForClass(classId, id);
+            var quizes = await _apiHelper.ReturnQuizesForSubject(classID, subjectID, id);
             if(quizes == null) return NoContent();
 
             return quizes;
         }
 
+        [HttpGet("getQuizQuestions/{classID}/{quizID}")]
+        [TokenAuthorization]
+        public async Task<ActionResult<List<QuestionToReturn>>> GetQuestionsForQuiz(string classID, string quizID)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
+
+            var id = _tokenHelper.GetIdByToken(token);
+
+            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, classID);
+        
+            if(!isUserInClass)
+            {
+                error.Err = "Nie należysz do podanej klasy";
+                error.Desc = "Nie możesz pobrać quizów";
+                return BadRequest(error);
+            }
+
+            List<QuestionToReturn> questionToReturn = new List<QuestionToReturn>();
+            questionToReturn = await _apiHelper.ReturnQuestionsForQuiz(classID, quizID);
+
+            if(questionToReturn == null)
+            {
+                error.Err = "Niepoprawne id quizu.";
+                error.Desc = "Nie możesz pytań.";
+                return NotFound(error);
+            }
+
+            return questionToReturn;
+        }
+
+        [HttpGet("getQuizAnswers/{classID}/{quizID}")]
+        [TokenAuthorization]
+        public async Task<ActionResult<List<QuestionToReturn>>> GetAnswersForQuiz(string classID, string quizID)
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
+
+            var id = _tokenHelper.GetIdByToken(token);
+
+            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, classID);
+        
+            if(!isUserInClass)
+            {
+                error.Err = "Nie należysz do podanej klasy";
+                error.Desc = "Nie możesz pobrać quizów";
+                return BadRequest(error);
+            }
+
+            List<QuestionToReturn> questionToReturn = new List<QuestionToReturn>();
+            questionToReturn = await _apiHelper.ReturnQuestionsForQuiz(classID, quizID);
+
+            if(questionToReturn == null)
+            {
+                error.Err = "Niepoprawne id quizu.";
+                error.Desc = "Nie możesz pytań.";
+                return NotFound(error);
+            }
+
+            return questionToReturn;
+        }
+
+
         [HttpPost("completeQuiz")]
         [TokenAuthorization]
         public async Task<IActionResult> CompleteQuiz(CompleteQuizDTO completeQuiz)
         {
+            //Dodac: brak mozliwosci wysylania odpowiedzi przez nauczyciela,
+            //sprawdzenie startDate, ID zamiast Id
             string token = HttpContext.Request.Headers["Authorization"];
             token = token.Replace("Bearer ", string.Empty);
 
@@ -114,6 +175,14 @@ namespace HomeSchoolAPI.Controllers
                 return NotFound(error);
             }
 
+            var usr = await _apiHelper.ReturnUserByID(id);
+            if(usr.userRole == 1)
+            {
+                error.Err = "Nie możesz odesłać quizu.";
+                error.Desc = "Jako nauczyciel nie możesz odesłać quizu.";
+                return NotFound(error);
+            }
+
             var quiz = await _apiHelper.ReturnQuizById(completeQuiz.classId, completeQuiz.quizId);
             if(quiz == null)
             {
@@ -122,6 +191,8 @@ namespace HomeSchoolAPI.Controllers
                 return NotFound(error);
             }
 
+            var questions = await _apiHelper.ReutrnCorrectQuizQuestions(completeQuiz.classId, completeQuiz.quizId);
+
             if(DateTime.Compare(quiz.FinishDate, DateTime.Now) < 0)
             {
                 error.Err = "Nie mozesz wyslac odpowiedzi do quizu.";
@@ -129,9 +200,23 @@ namespace HomeSchoolAPI.Controllers
                 return NotFound(error);
             }
 
-            for (int i = 0; i < quiz.questions.Count; i++)
+            if(DateTime.Compare(quiz.StartDate, DateTime.Now) > 0)
             {
-                var question = quiz.questions[i];
+                error.Err = "Nie mozesz wyslac odpowiedzi do quizu.";
+                error.Desc = "Quiz się nie rozpoczął.";
+                return NotFound(error);
+            }
+
+            if(completeQuiz.answers.Count != quiz.amountOfQuestions)
+            {
+                error.Err = "Nie mozesz wyslac odpowiedzi do quizu.";
+                error.Desc = "Nie odpowiedziałeś na wszystkie pytania.";
+                return NotFound(error);
+            }
+
+            for (int i = 0; i < questions.Questions.Count; i++)
+            {
+                var question = questions.Questions[i];
                 if(completeQuiz.answers[i] == question.correctAnswer)
                 {
                     correctAnswersAmount++;
@@ -143,7 +228,7 @@ namespace HomeSchoolAPI.Controllers
             responseToQuiz.executonerId = id;
             responseToQuiz.classId = completeQuiz.classId;
             responseToQuiz.FinishDate = DateTime.Now;
-            responseToQuiz.percentageOfCorrectAnswers = (double)correctAnswersAmount/quiz.questions.Count * 100;
+            responseToQuiz.percentageOfCorrectAnswers = (double)correctAnswersAmount/questions.Questions.Count * 100;
             responseToQuiz.quizId = quiz.Id;
 
             bool isAnswerCorrect = await _apiHelper.SaveAnswersToQuiz(responseToQuiz);

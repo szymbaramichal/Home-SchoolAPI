@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HomeSchoolCore.APIRequest;
 using HomeSchoolCore.APIRespond;
 using HomeSchoolCore.Models;
 using Microsoft.AspNetCore.Http;
@@ -56,10 +57,12 @@ namespace HomeSchoolCore.Helpers
         Task<List<TextMessage>> ReturnOlderMessages(int lastMessageID, string subjectID);
         #endregion
         #region Quizes
-        Task<bool> IsQuizAdded(Quiz quizObj);
-        Task<QuizesToReturn> ReturnAllActiveQuizesForClass(string classId, string userId);
+        Task<Quiz> IsQuizAdded(CreateQuizDTO quizObj);
+        Task<QuizesToReturn> ReturnQuizesForSubject(string classId, string subjectId, string userId);
         Task<Quiz> ReturnQuizById(string classId, string quizId);
         Task<bool> SaveAnswersToQuiz(ResponseToQuiz responseToQuiz);
+        Task<List<QuestionToReturn>> ReturnQuestionsForQuiz(string classId, string quizId);
+        Task<QuizQuestion> ReutrnCorrectQuizQuestions(string classId, string quizId);
         #endregion
     }
 

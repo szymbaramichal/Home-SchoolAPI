@@ -39,7 +39,7 @@ namespace HomeSchoolAPI.Controllers
 
             var subject = await _apiHelper.ReturnSubjectBySubjectID(homeworkToAdd.ClassID, homeworkToAdd.SubjectID);
 
-            if(subject == null || classObj.creatorID != id || classObj == null)
+            if(subject == null || subject.teacherID != id || classObj == null)
             {
                 error.Err = "Nie jestes nauczycielem tej klasy";
                 error.Desc = "Nie mozesz dodac zadania";
