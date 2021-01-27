@@ -133,16 +133,7 @@ namespace HomeSchoolCore.Helpers
                 {
                     var subjectObj = await _subjects.Find<Subject>(x => x.Id == classObj.subjects[i]).FirstOrDefaultAsync();
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
-
-                    //Jeśli jest nauczycielem przedmiotu 
-                    if(subjectObj.teacherID == userID)
-                    {
-
-                    }
-                    else
-                    {
-                        subjectToReturn.Homeworks = new List<HomeworkToReturn>();
-                    }
+                    subjectToReturn.Quizes.Quizes = new List<Quiz>();
 
                     classToReturn.Subjects.Add(subjectToReturn);
                 }
@@ -340,7 +331,12 @@ namespace HomeSchoolCore.Helpers
                 TeacherID = subject.teacherID,
                 Homeworks = new List<HomeworkToReturn>()
             };
-            
+
+            var userClass = await _classes.Find<Class>(x => x.Id == subjectToReturn.ClassID).FirstOrDefaultAsync();
+            if(userClass.creatorID == userID && subject.teacherID != userID)
+            {
+                return subjectToReturn;
+            }
             for (int i = 0; i < subject.homeworks.Count; i++)
             {
                 var homeworkObj = await _homeworks.Find<Homework>(x => x.Id == subject.homeworks[i]).FirstOrDefaultAsync();
