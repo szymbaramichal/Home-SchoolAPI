@@ -133,7 +133,11 @@ namespace HomeSchoolCore.Helpers
                 {
                     var subjectObj = await _subjects.Find<Subject>(x => x.Id == classObj.subjects[i]).FirstOrDefaultAsync();
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
-                    subjectToReturn.Quizes.Quizes = new List<Quiz>();
+                    if(subjectToReturn.TeacherID != userID)
+                    {
+                        subjectToReturn.Quizes.Quizes = new List<Quiz>();
+                    }
+
 
                     classToReturn.Subjects.Add(subjectToReturn);
                 }
