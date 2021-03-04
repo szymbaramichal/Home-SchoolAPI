@@ -63,6 +63,7 @@ namespace HomeSchoolCore.Helpers
         Task<bool> SaveAnswersToQuiz(ResponseToQuiz responseToQuiz);
         Task<List<QuestionToReturn>> ReturnQuestionsForQuiz(string classId, string quizId);
         Task<QuizQuestion> ReutrnCorrectQuizQuestions(string classId, string quizId);
+        Task<List<AnswerToReturn>> GetAnswersForStudent(string id);
         #endregion
     }
 

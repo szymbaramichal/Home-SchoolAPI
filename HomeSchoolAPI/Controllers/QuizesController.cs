@@ -27,7 +27,7 @@ namespace HomeSchoolAPI.Controllers
         /// <summary>
         /// Creating quiz for subject by subjectTeacher.
         /// </summary>
-        [HttpPost("create")]
+        [HttpPost("createQuiz")]
         [TokenAuthorization]
         public async Task<IActionResult> CreateQuiz(CreateQuizDTO createQuiz)
         {
@@ -65,9 +65,9 @@ namespace HomeSchoolAPI.Controllers
         }
 
         /// <summary>
-        /// Return all quizes for class.
+        /// Return all quizes for subject.
         /// </summary>
-        [HttpGet("getAllQuizes/{classID}/{subjectID}")]
+        [HttpGet("getAllQuizesForSubject/{classID}/{subjectID}")]
         [TokenAuthorization]
         public async Task<ActionResult<QuizesToReturn>> GetQuizesForSubject(string classID, string subjectID)
         {
@@ -91,6 +91,11 @@ namespace HomeSchoolAPI.Controllers
             return quizes;
         }
 
+
+
+        /// <summary>
+        /// Get quiz questions with answers.
+        /// </summary>
         [HttpGet("getQuizQuestions/{classID}/{quizID}")]
         [TokenAuthorization]
         public async Task<ActionResult<List<QuestionToReturn>>> GetQuestionsForQuiz(string classID, string quizID)
@@ -115,45 +120,41 @@ namespace HomeSchoolAPI.Controllers
             if(questionToReturn == null)
             {
                 error.Err = "Niepoprawne id quizu.";
-                error.Desc = "Nie możesz pytań.";
+                error.Desc = "Nie możesz pobrać pytań.";
                 return NotFound(error);
             }
 
             return questionToReturn;
         }
 
-        [HttpGet("getQuizAnswers/{classID}/{quizID}")]
+        /// <summary>
+        /// Get all answers for student.
+        /// </summary>
+        [HttpGet("getAnswersForStudent")]
         [TokenAuthorization]
-        public async Task<ActionResult<List<QuestionToReturn>>> GetAnswersForQuiz(string classID, string quizID)
+        public async Task<ActionResult<List<AnswerToReturn>>> GetAnswersForStudent()
         {
             string token = HttpContext.Request.Headers["Authorization"];
             token = token.Replace("Bearer ", string.Empty);
 
             var id = _tokenHelper.GetIdByToken(token);
 
-            var isUserInClass = await _apiHelper.DoesUserBelongToClass(id, classID);
-        
-            if(!isUserInClass)
-            {
-                error.Err = "Nie należysz do podanej klasy";
-                error.Desc = "Nie możesz pobrać quizów";
-                return BadRequest(error);
-            }
+            var answers = await _apiHelper.GetAnswersForStudent(id);
 
-            List<QuestionToReturn> questionToReturn = new List<QuestionToReturn>();
-            questionToReturn = await _apiHelper.ReturnQuestionsForQuiz(classID, quizID);
-
-            if(questionToReturn == null)
+            if(answers == null)
             {
-                error.Err = "Niepoprawne id quizu.";
-                error.Desc = "Nie możesz pytań.";
+                error.Err = "Nie jesteś nauczycielem";
+                error.Desc = "Nie możesz pobrać swoich odpowiedzi";
                 return NotFound(error);
             }
 
-            return questionToReturn;
+            return answers;
         }
 
 
+        /// <summary>
+        /// Send answers for quiz.
+        /// </summary>
         [HttpPost("completeQuiz")]
         [TokenAuthorization]
         public async Task<IActionResult> CompleteQuiz(CompleteQuizDTO completeQuiz)

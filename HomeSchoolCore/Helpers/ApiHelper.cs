@@ -746,7 +746,7 @@ namespace HomeSchoolCore.Helpers
             {
                 quizes = await _quizes.Find<Quiz>(x => x.status == "ACTIVE" && x.subjectID == subjectId).ToListAsync();
 
-                List<Quiz> quizesToDelete = new List<Quiz>();
+                List<Quiz> quizesToExcept = new List<Quiz>();
                 foreach (var quiz in quizes)
                 {
                     QuizToReturn quizToReturn = new QuizToReturn {
@@ -761,7 +761,7 @@ namespace HomeSchoolCore.Helpers
                     {
                         quiz.status = "INACTIVE";
                         await _quizes.FindOneAndReplaceAsync(x => x.Id == quiz.Id, quiz);
-                        quizesToDelete.Add(quiz);
+                        quizesToExcept.Add(quiz);
                     }
                     else
                     {
@@ -769,19 +769,20 @@ namespace HomeSchoolCore.Helpers
                         {
                             var answer = await _quizesAnswers.Find(x => x.executonerId == userId && quiz.Id == quiz.Id).FirstOrDefaultAsync();
                             answers.Add(new AnswerToReturn {
-                                executonerId = userId,
+                                Executoner = $"{user.name} {user.surrname}",
                                 PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
-                                quizId = quiz.Id
+                                QuizId = quiz.Id
                             });
+                            quiz.status = "INACTIVE";
                         }
 
                         quiz.executonersId = new List<string>();
                     }
                 }
 
-                if(quizesToDelete.Count != 0)
+                if(quizesToExcept.Count != 0)
                 {
-                    quizes = quizes.Except(quizesToDelete).ToList();
+                    quizes = quizes.Except(quizesToExcept).ToList();
                 }
 
                 var quizesToReturn = new QuizesToReturn();
@@ -804,10 +805,11 @@ namespace HomeSchoolCore.Helpers
                     foreach (var executoner in quiz.executonersId)
                     {
                         var answer = await _quizesAnswers.Find(x => x.executonerId == executoner && quiz.Id == quiz.Id).FirstOrDefaultAsync();
+                        var executonerFromDb = await _users.Find(x => x.Id == executoner).FirstOrDefaultAsync();
                         answers.Add(new AnswerToReturn {
-                            executonerId = executoner,
+                            Executoner = $"{executonerFromDb.name} {executonerFromDb.surrname}",
                             PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
-                            quizId = quiz.Id
+                            QuizId = quiz.Id
                         });
                     }
                 }
@@ -816,6 +818,27 @@ namespace HomeSchoolCore.Helpers
                 quizesToReturn.Answers = answers;
                 return quizesToReturn;
             }
+        }
+
+        public async Task<List<AnswerToReturn>> GetAnswersForStudent(string id)
+        {
+            var user = await _users.Find(x => x.Id == id).FirstOrDefaultAsync();
+            if(user.userRole != 0) return null;
+
+            _quizesAnswers = database.GetCollection<ResponseToQuiz>(user.classMember.First() + "_quizesAnswers");
+            var answers = await _quizesAnswers.Find(x => x.executonerId == id).ToListAsync();
+
+            List<AnswerToReturn> answersToReturn = new List<AnswerToReturn>();
+            foreach (var answer in answers)
+            {
+                answersToReturn.Add(new AnswerToReturn {
+                    Executoner = $"{user.name} {user.surrname}",
+                    PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
+                    QuizId = answer.quizId
+                });
+            }
+
+            return answersToReturn;
         }
 
         public async Task<List<QuestionToReturn>> ReturnQuestionsForQuiz(string classId, string quizId)

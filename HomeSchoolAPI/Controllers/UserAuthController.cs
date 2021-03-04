@@ -198,7 +198,8 @@ namespace HomeSchoolAPI.Controllers
 
             var classes = new List<ClassToReturn>();
             for (int i = 0; i < user.classMember.Count; i++)
-            {                var classObj = await _apiHelper.ReturnClassByID(user.classMember[i]);
+            {                
+                var classObj = await _apiHelper.ReturnClassByID(user.classMember[i]);
                 classes.Add(await _apiHelper.ReturnClassToReturn(classObj, user.Id));
             }
 
