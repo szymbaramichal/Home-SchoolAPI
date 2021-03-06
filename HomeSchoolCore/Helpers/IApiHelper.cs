@@ -58,12 +58,13 @@ namespace HomeSchoolCore.Helpers
         #endregion
         #region Quizes
         Task<Quiz> IsQuizAdded(CreateQuizDTO quizObj);
-        Task<QuizesToReturn> ReturnQuizesForSubject(string classId, string subjectId, string userId);
+        Task<List<QuizToReturn>> ReturnQuizesForSubject(string classId, string subjectId, string userId);
         Task<Quiz> ReturnQuizById(string classId, string quizId);
         Task<bool> SaveAnswersToQuiz(ResponseToQuiz responseToQuiz);
         Task<List<QuestionToReturn>> ReturnQuestionsForQuiz(string classId, string quizId);
         Task<QuizQuestion> ReutrnCorrectQuizQuestions(string classId, string quizId);
         Task<List<AnswerToReturn>> GetAnswersForStudent(string id);
+        Task<List<AnswerToReturn>> GetAnswersForQuiz(string userId, string classId, string subjectId, string quizId);
         #endregion
     }
 

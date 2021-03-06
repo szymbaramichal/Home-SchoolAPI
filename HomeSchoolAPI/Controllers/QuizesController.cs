@@ -69,7 +69,7 @@ namespace HomeSchoolAPI.Controllers
         /// </summary>
         [HttpGet("getAllQuizesForSubject/{classID}/{subjectID}")]
         [TokenAuthorization]
-        public async Task<ActionResult<QuizesToReturn>> GetQuizesForSubject(string classID, string subjectID)
+        public async Task<ActionResult<List<QuizToReturn>>> GetQuizesForSubject(string classID, string subjectID)
         {
             string token = HttpContext.Request.Headers["Authorization"];
             token = token.Replace("Bearer ", string.Empty);
@@ -91,6 +91,28 @@ namespace HomeSchoolAPI.Controllers
             return quizes;
         }
 
+
+        /// <summary>
+        /// Return all answers for quiz, based on user role.
+        /// </summary>
+        [HttpGet("getAnswersForQuizId/{classId}/{subjectId}/{quizId}")]
+        [TokenAuthorization]
+        public async Task<ActionResult<List<AnswerToReturn>>> GetAnswersForQuiz(string quizId, string subjectId, string classId) 
+        {
+            string token = HttpContext.Request.Headers["Authorization"];
+            token = token.Replace("Bearer ", string.Empty);
+            var id = _tokenHelper.GetIdByToken(token);
+
+            List<AnswerToReturn> answers = await _apiHelper.GetAnswersForQuiz(id, classId, subjectId, quizId);
+
+            if(answers == null) 
+            {
+                error.Err = "Nie udalo sie pobrac odpowiedzi dla quizu.";
+                error.Desc = "Sprobuj ponownie sprawdzajac dane.";
+                return BadRequest(error);
+            }
+            else return answers;
+        }
 
 
         /// <summary>

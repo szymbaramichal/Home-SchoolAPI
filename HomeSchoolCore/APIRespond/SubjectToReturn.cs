@@ -10,6 +10,6 @@ namespace HomeSchoolCore.APIRespond
         public string ClassID { get; set; }
         public string TeacherID { get; set; }
         public List<HomeworkToReturn> Homeworks { get; set; }
-        public QuizesToReturn Quizes { get; set; } = new QuizesToReturn();
+        public List<QuizToReturn> Quizes { get; set; } = new List<QuizToReturn>();
     }
 }

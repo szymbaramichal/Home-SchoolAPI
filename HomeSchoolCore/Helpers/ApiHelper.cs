@@ -135,7 +135,7 @@ namespace HomeSchoolCore.Helpers
                     var subjectToReturn = await ReturnSubjectToReturn(subjectObj, userID);
                     if(subjectToReturn.TeacherID != userID)
                     {
-                        subjectToReturn.Quizes.Quizes = new List<Quiz>();
+                        subjectToReturn.Quizes = new List<QuizToReturn>();
                     }
 
 
@@ -348,9 +348,8 @@ namespace HomeSchoolCore.Helpers
                 subjectToReturn.Homeworks.Add(homeworkToReturn);
             }
 
-            QuizesToReturn quizes = await ReturnQuizesForSubject(subject.classID, subject.Id, userID);
-            subjectToReturn.Quizes.Quizes = quizes.Quizes;
-            subjectToReturn.Quizes.Answers = quizes.Answers;
+            List<QuizToReturn> quizes = await ReturnQuizesForSubject(subject.classID, subject.Id, userID);
+            subjectToReturn.Quizes = quizes;
             return subjectToReturn;
         }
         public async Task<bool> IsSubjectDeleted(string classID, string subjectID, string userID)
@@ -727,36 +726,37 @@ namespace HomeSchoolCore.Helpers
             await _quizQuestions.InsertOneAsync(questionsToAdd);
 
 
-            //dodanie odpowiedzi do QuizQuestion
             return quiz;
         }
 
 
-        //Zrobic zwracanie odpowiedzi, zastanowic sie nad logika odpowiedzi, potestowac
-        public async Task<QuizesToReturn> ReturnQuizesForSubject(string classId, string subjectId, string userId)
+        public async Task<List<QuizToReturn>> ReturnQuizesForSubject(string classId, string subjectId, string userId)
         {
             _quizes = database.GetCollection<Quiz>(classId+"_quizes");
             _quizesAnswers = database.GetCollection<ResponseToQuiz>(classId + "_quizesAnswers");
             var user = await _users.Find<User>(x => x.Id == userId).FirstOrDefaultAsync();
 
-            List<Quiz> quizes = new List<Quiz>();
-            List<AnswerToReturn> answers = new List<AnswerToReturn>();
+            List<Quiz> quizes;
 
             if(user.userRole == 0)
             {
                 quizes = await _quizes.Find<Quiz>(x => x.status == "ACTIVE" && x.subjectID == subjectId).ToListAsync();
 
+                List<QuizToReturn> quizesToReturn = new List<QuizToReturn>();
                 List<Quiz> quizesToExcept = new List<Quiz>();
                 foreach (var quiz in quizes)
                 {
                     QuizToReturn quizToReturn = new QuizToReturn {
                         amountOfQuestions = quiz.amountOfQuestions,
                         classID = quiz.classID,
-                        executonersId = quiz.executonersId,
                         FinishDate = quiz.FinishDate,
+                        StartDate = quiz.StartDate,
                         Id = quiz.Id,
-                        name = quiz.name
+                        name = quiz.name,
+                        status = quiz.status,
+                        subjectID = quiz.subjectID
                     };
+
                     if(DateTime.Compare(quiz.FinishDate, DateTime.Now) < 0)
                     {
                         quiz.status = "INACTIVE";
@@ -765,18 +765,7 @@ namespace HomeSchoolCore.Helpers
                     }
                     else
                     {
-                        if(quiz.executonersId.Contains(userId) && quiz.executonersId.Count != 0)
-                        {
-                            var answer = await _quizesAnswers.Find(x => x.executonerId == userId && quiz.Id == quiz.Id).FirstOrDefaultAsync();
-                            answers.Add(new AnswerToReturn {
-                                Executoner = $"{user.name} {user.surrname}",
-                                PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
-                                QuizId = quiz.Id
-                            });
-                            quiz.status = "INACTIVE";
-                        }
-
-                        quiz.executonersId = new List<string>();
+                        quizesToReturn.Add(quizToReturn);
                     }
                 }
 
@@ -785,16 +774,17 @@ namespace HomeSchoolCore.Helpers
                     quizes = quizes.Except(quizesToExcept).ToList();
                 }
 
-                var quizesToReturn = new QuizesToReturn();
-                quizesToReturn.Quizes = quizes;
-                quizesToReturn.Answers = answers;
                 return quizesToReturn;
             }
             else
             {
                 var subject = await _subjects.Find<Subject>(x => x.teacherID == userId && x.classID == classId).FirstOrDefaultAsync();
                 if(subject == null) return null;
+
                 quizes = await _quizes.Find<Quiz>(x => x.subjectID == subject.Id).ToListAsync();
+
+                List<QuizToReturn> quizesToReturn = new List<QuizToReturn>();
+
                 foreach (var quiz in quizes)
                 {
                     if(DateTime.Compare(quiz.FinishDate, DateTime.Now) < 0)
@@ -802,20 +792,21 @@ namespace HomeSchoolCore.Helpers
                         quiz.status = "INACTIVE";
                         await _quizes.FindOneAndReplaceAsync(x => x.Id == quiz.Id, quiz);
                     }
-                    foreach (var executoner in quiz.executonersId)
-                    {
-                        var answer = await _quizesAnswers.Find(x => x.executonerId == executoner && quiz.Id == quiz.Id).FirstOrDefaultAsync();
-                        var executonerFromDb = await _users.Find(x => x.Id == executoner).FirstOrDefaultAsync();
-                        answers.Add(new AnswerToReturn {
-                            Executoner = $"{executonerFromDb.name} {executonerFromDb.surrname}",
-                            PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
-                            QuizId = quiz.Id
-                        });
-                    }
+
+                    QuizToReturn quizToReturn = new QuizToReturn {
+                        amountOfQuestions = quiz.amountOfQuestions,
+                        classID = quiz.classID,
+                        FinishDate = quiz.FinishDate,
+                        StartDate = quiz.StartDate,
+                        Id = quiz.Id,
+                        name = quiz.name,
+                        status = quiz.status,
+                        subjectID = quiz.subjectID
+                    };
+                    
+                    quizesToReturn.Add(quizToReturn);
                 }
-                var quizesToReturn = new QuizesToReturn();
-                quizesToReturn.Quizes = quizes;
-                quizesToReturn.Answers = answers;
+
                 return quizesToReturn;
             }
         }
@@ -907,6 +898,52 @@ namespace HomeSchoolCore.Helpers
             if(questions == null) return null;
 
             return questions;
+        }
+
+
+        public async Task<List<AnswerToReturn>> GetAnswersForQuiz(string userId, string classId, string subjectId, string quizId)
+        {
+            var user = await _users.Find(x => x.Id == userId).FirstOrDefaultAsync();
+            if(user.userRole == 0)
+            {
+                _quizesAnswers = database.GetCollection<ResponseToQuiz>(classId + "_quizesAnswers");
+                var answer = await _quizesAnswers.Find(x => x.executonerId == userId && x.quizId == quizId).FirstOrDefaultAsync();
+                if (answer == null) return null;
+
+                List<AnswerToReturn> answersToReturn = new List<AnswerToReturn>();
+                answersToReturn.Add(new AnswerToReturn {
+                    Executoner = $"{user.name} {user.surrname}",
+                    PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
+                    QuizId = quizId
+                });
+
+                return answersToReturn;
+            }
+            else
+            {
+                _quizesAnswers = database.GetCollection<ResponseToQuiz>(classId + "_quizesAnswers");
+
+                var subject = await _subjects.Find(x => x.Id == subjectId).FirstOrDefaultAsync();
+                if(subject.teacherID == userId)
+                {
+                    var answers = await _quizesAnswers.Find(x => x.quizId == quizId).ToListAsync();
+                    List<AnswerToReturn> answersToReturn = new List<AnswerToReturn>();
+                    foreach (var answer in answers)
+                    {
+                        var userFromAnswer = await _users.Find(x => x.Id == answer.executonerId).FirstOrDefaultAsync();
+                        answersToReturn.Add(new AnswerToReturn {
+                            Executoner = $"{userFromAnswer.name} {userFromAnswer.surrname}",
+                            PercentageOfCorrectAnswers = answer.percentageOfCorrectAnswers,
+                            QuizId = answer.quizId
+                        });
+                    }
+                    return answersToReturn;
+                } 
+                else return null;
+
+            }
+
+
         }
         #endregion
     }
