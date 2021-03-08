@@ -765,6 +765,7 @@ namespace HomeSchoolCore.Helpers
                     }
                     else
                     {
+                        if(quiz.executonersId.Contains(user.Id)) quizToReturn.status = "INACTIVE";
                         quizesToReturn.Add(quizToReturn);
                     }
                 }
@@ -880,10 +881,11 @@ namespace HomeSchoolCore.Helpers
             _quizesAnswers = database.GetCollection<ResponseToQuiz>(responseToQuiz.classId + "_quizesAnswers");
             _quizes = database.GetCollection<Quiz>(responseToQuiz.classId+"_quizes");
 
-            await _quizesAnswers.InsertOneAsync(responseToQuiz);
-
             var quiz = await _quizes.Find<Quiz>(x => x.Id == responseToQuiz.quizId).FirstOrDefaultAsync();
             if(quiz.executonersId.Contains(responseToQuiz.executonerId)) return false; 
+
+            await _quizesAnswers.InsertOneAsync(responseToQuiz);
+
             quiz.executonersId.Add(responseToQuiz.executonerId);
 
             await _quizes.FindOneAndReplaceAsync(x => x.Id == quiz.Id, quiz);
