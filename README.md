@@ -12,6 +12,6 @@
 
 ### Technikalia:
 #### Backend:
-* **Język: C# w technologii .NET CORE 3.1
+* Język: C# w technologii .NET CORE 3.1
 * **Technologie wykorzystane i funkcjonalności**: protokół SMTP, tokeny webowe JWT, SHA512, DependencyInjection, Swashbuckle - Swagger, autorski system przesyłania plików.
-* **Baza danych: MongoDB 
+* Baza danych: MongoDB 
